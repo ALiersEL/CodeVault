@@ -9,8 +9,15 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@types/crypto-js": "^4.1.1",
+    "@vicons/ionicons5": "^0.12.0",
+    "axios": "^1.4.0",
+    "crypto-js": "^4.1.1",
+    "naive-ui": "^2.34.3",
+    "pinia": "^2.0.36",
     "vue": "^3.2.47",
-    "vue-router": "4"
+    "vue-router": "4",
+    "webpack": "^5.83.1"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^4.1.0",
