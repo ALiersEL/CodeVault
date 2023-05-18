@@ -1,12 +1,12 @@
-user(<u>user_id</u>, user_name, encrypted_password, date_registered, phone_number, email, ac_easy, ac_medium, ac_hard, total_easy, total_medium, total_hard)
+user(<u>user_id</u>, user_name, password_hash, date_registered, phone_number, email, ac_easy, ac_medium, ac_hard, total_easy, total_medium, total_hard)
 ```PgSQL
 CREATE TABLE "user" (
     user_id SERIAL PRIMARY KEY,
-    user_name VARCHAR(50) NOT NULL,
-    encrypted_password VARCHAR(100) NOT NULL,
-    date_registered TIMESTAMP NOT NULL DEFAULT NOW(),
+    user_name VARCHAR(50) NOT NULL UNIQUE,
+    password_hash VARCHAR(100) NOT NULL,
+    date_registered TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     phone_number VARCHAR(20),
-    email VARCHAR(50),
+    email VARCHAR(50) NOT NULL,
     ac_easy INTEGER NOT NULL DEFAULT 0,
     ac_medium INTEGER NOT NULL DEFAULT 0,
     ac_hard INTEGER NOT NULL DEFAULT 0,
@@ -22,8 +22,8 @@ CREATE TABLE folder (
     folder_id SERIAL PRIMARY KEY,
     folder_name VARCHAR(50) NOT NULL,
     parent_folder_id INTEGER DEFAULT NULL,
-    date_added TIMESTAMP NOT NULL DEFAULT NOW(),
-    last_modified TIMESTAMP NOT NULL DEFAULT NOW(),
+    date_added TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    last_modified TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     user_id INTEGER NOT NULL,
     FOREIGN KEY (user_id) REFERENCES "user"(user_id)
     ON DELETE CASCADE,
@@ -42,8 +42,8 @@ CREATE TABLE problem (
     difficulty SMALLINT,
     status BOOLEAN NOT NULL DEFAULT FALSE,
     mastery SMALLINT NOT NULL DEFAULT 0,
-    date_added TIMESTAMP NOT NULL DEFAULT NOW(),
-    last_modified TIMESTAMP NOT NULL DEFAULT NOW(),
+    date_added TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    last_modified TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     company_id INTEGER,
     department_id INTEGER,
     post_id INTEGER,
@@ -124,7 +124,7 @@ note(<u>note_id</u>, note_text, last_modified, problem_id)
 CREATE TABLE note (
     note_id SERIAL PRIMARY KEY,
     note_text TEXT NOT NULL,
-    last_modified TIMESTAMP NOT NULL DEFAULT NOW(),
+    last_modified TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     problem_id INTEGER NOT NULL,
     FOREIGN KEY (problem_id) REFERENCES problem(problem_id)
     ON DELETE CASCADE
@@ -137,7 +137,7 @@ CREATE TABLE code (
     code_id SERIAL PRIMARY KEY,
     code_text TEXT NOT NULL,
     code_language SMALLINT NOT NULL,
-    last_modified TIMESTAMP NOT NULL DEFAULT NOW(),
+    last_modified TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     problem_id INTEGER NOT NULL,
     FOREIGN KEY (problem_id) REFERENCES problem(problem_id)
     ON DELETE CASCADE

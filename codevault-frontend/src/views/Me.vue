@@ -5,7 +5,7 @@ import NavigationPanel from "../components/NavigationPanel.vue";
 <template>
     <div>
         <NavigationPanel />
-        <p>This is problemset</p>
+        <p>This is me</p>
     </div>
 </template>
 

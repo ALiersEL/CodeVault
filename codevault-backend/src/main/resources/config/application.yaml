@@ -1,0 +1,16 @@
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: update
+  datasource:
+    url: jdbc:postgresql://${POSTGRESQL_HOST:localhost}:5432/code_vault
+    username: 
+    password:
+    driver-class-name: org.postgresql.Driver
+
+server:
+  #端口号
+  port: 8765
+
+mybatis:
+  config-location: classpath:config/mybatis-config.xml

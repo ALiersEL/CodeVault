@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { GlassesOutline, Glasses } from "@vicons/ionicons5";
 import { ref } from "vue";
+import { GlassesOutline, Glasses } from "@vicons/ionicons5";
 import { postMapping } from "../api/request";
 import router from "../router";
 import SHA256 from "crypto-js/sha256";
 
-const isVisible = ref(false);
+let isVisible = ref(false);
 
 const togglePassword = () => {
   isVisible.value = !isVisible.value;
@@ -13,30 +13,32 @@ const togglePassword = () => {
 
 let username = ref("");
 let password = ref("");
+let email = ref("");
+let phoneNumber = ref("");
 
-const login = () => {
-  console.log("login");
+const register = () => {
+    console.log("register");
 
-  const user = {
-    userName: username.value,
-    passwordHash: SHA256(password.value).toString()
-  };
+    const user = {
+        userName: username.value,
+        passwordHash: SHA256(password.value).toString(),
+        email: email.value,
+        phoneNumber: phoneNumber.value
+    };
 
-  console.log(user);
+    console.log(user);
 
-  //用axios把user传到后端
-  postMapping("/user/login", user).then((res) => {
-    console.log(res);
-    if (res.data.code === 200) {
-      alert("登录成功");
-      router.push("/home");
-    } else if(res.data.code === 400){
-      alert(res.data.msg);
-    }
-  });
-}
-
-
+    //用axios把user传到后端
+    postMapping("/user/register", user).then((res) => {
+        console.log(res);
+        if (res.data.code === 200) {
+            alert("注册成功");
+            router.push("/home");
+        } else {
+            alert(res.data.msg);
+        }
+    });
+};
 
 </script>
 
@@ -47,12 +49,12 @@ const login = () => {
       </div>
 
       <div class="right">
-        <form class="content" @submit.prevent="login">
-          <h2>Log In</h2>
+        <form class="content" @submit.prevent="register">
+          <h2>Join CodeVault</h2>
 
           <div class="box">
             <div>Username</div>
-            <input type="text" v-model="username" required autofocus />
+            <input type="text" v-model="username" required/>
           </div>
 
           <div class="box">
@@ -65,22 +67,19 @@ const login = () => {
                 <Glasses />
             </div> 
           </div>
-
-          <!-- checkbox named Keep me logged in -->
-          <div class="extra-feature">
-            <div class="left-extra">
-              <input type="checkbox" name="keepLoggedIn" id="keepLoggedIn">
-              <label for="keepLoggedIn">&nbsp Keep me logged in</label>
-            </div>
-
-            <div class="right-extra">
-              <a href="#">Forgot password?</a>
-            </div>
-            
+          
+          <div class="box">
+            <div>Email</div>
+            <input type="email" v-model="email" required/>
           </div>
 
-          <button type="submit">Log In</button>
-          <p class="sign-up">Become a member <router-link to="/register">Join CodeVault</router-link></p>
+          <div class="box">
+            <div>Phone number</div>
+            <input type="tel" v-model="phoneNumber"/>
+          </div>
+
+          <button type="submit" >Sign Up</button>
+          <p class="log-in">Already a member? <router-link to="/login">Log In</router-link></p>
         </form>
       </div>
     </div>
@@ -122,6 +121,7 @@ const login = () => {
   height: 100%;
   background-color: #f9f9f9;
 }
+
 .content {
   display: flex;
   flex-direction: column;
@@ -164,29 +164,14 @@ const login = () => {
   width: 10%
 }
 
-/* 使得checkbox和它的label在同一行 */
-.extra-feature {
-  margin-top: 8%;
-  width: 80%;
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  font-size: 1.4rem;
-}
-
-.left-extra {
-  display: flex;
-  width: 50%;
-}
-
-.sign-up {
+.log-in {
   margin-top: 5%;
   font-size: 1.4rem;
 }
 
 button {
   /* gradient */
-  margin-top: 5%;
+  margin-top: 10%;
   width: 65%;
   height: 5%;
   border: none;
@@ -200,39 +185,6 @@ button {
 button:hover {
 
   background-image: linear-gradient(to right, #71e69e, #6bdd9a, #65d495, #5fcc91, #5ac38c);
-}
-
-svg {
-  color: #777;
-}
-
-input[type="checkbox"] {
-  /* 隐藏原始勾选标记 */
-  margin-top: 2%;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  appearance: none;
-  outline: none;
-}
-
-input[type="checkbox"]::before {
-  /* 创建自定义勾选标记 */
-  content: "";
-  display: inline-block;
-  width: 20px;
-  height: 20px;
-  border: 2px solid #5ac38c;
-  border-radius: 3px;
-}
-
-input[type="checkbox"]:hover::before {
-  background-color: rgba(90, 195, 140, 0.7); 
-}
-
-input[type="checkbox"]:checked::before {
-  content: "✔️"; /* 使用Unicode字符表示勾选标记 */
-  text-align: center;
-  background-color: #5ac38c; /* 改变勾选标记的颜色 */
 }
 
 a {

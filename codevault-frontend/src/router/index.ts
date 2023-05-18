@@ -1,4 +1,4 @@
-import { createRouter, createWebHashHistory, RouteRecordRaw } from "vue-router";
+import { createRouter, createWebHistory, RouteRecordRaw } from "vue-router";
 
 //定义路由
 const routes: Array<RouteRecordRaw> = [
@@ -16,6 +16,10 @@ const routes: Array<RouteRecordRaw> = [
     component: () => import("../views/Problemset.vue"),
   },
   {
+    path: "/me",
+    component: () => import("../views/Me.vue"),
+  },
+  {
     path: "/about",
     component: () => import("../views/About.vue"),
   },
@@ -23,12 +27,15 @@ const routes: Array<RouteRecordRaw> = [
     path: "/login",
     component: () => import("../views/Login.vue"),
   },
+  {
+    path: "/register",
+    component: () => import("../views/Register.vue"),
+  }
 ]
 
 //导入路由，使用history模式
 const router =  createRouter({
-     history: createWebHashHistory(), 
-     linkActiveClass: 'link-active',
+     history: createWebHistory(),
      routes 
 });
 

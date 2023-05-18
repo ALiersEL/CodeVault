@@ -1,9 +1,11 @@
 <script setup lang="ts">
+import NavigationPanel from "../components/NavigationPanel.vue";
 </script>
 
 <template>
     <div>
-        This is about
+        <NavigationPanel />
+        <p>This is about</p>
     </div>
 </template>
 
