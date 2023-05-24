@@ -10,6 +10,7 @@ export default defineConfig({
       // 正则表达式写法
       '^/api': {
         target: 'http://localhost:8765', // 后端服务实际地址
+        ws: true,
         changeOrigin: true, //开启代理
         rewrite: (path) => path.replace(/^\/api/, '')
       }

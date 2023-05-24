@@ -19,7 +19,7 @@ const login = () => {
 
   const user = {
     userName: username.value,
-    passwordHash: SHA256(password.value).toString()
+    passwordHash: SHA256(password.value + SHA256(username.value) + 'hlytbnpOQA').toString(),
   };
 
   console.log(user);
@@ -57,13 +57,15 @@ const login = () => {
 
           <div class="box">
             <div>Password</div>
-            <input :type="isVisible ? 'text' : 'password'" v-model="password" required/>
-            <div v-if="isVisible" class="eye" @click="togglePassword">
-                <GlassesOutline />
+            <div class="input-wrapper">
+              <input :type="isVisible ? 'text' : 'password'" v-model="password" required/>
+              <div v-if="isVisible" class="eye" @click="togglePassword">
+                  <GlassesOutline />
+              </div>
+              <div v-if="!isVisible" class="eye" @click="togglePassword">
+                  <Glasses />
+              </div> 
             </div>
-            <div v-if="!isVisible" class="eye" @click="togglePassword">
-                <Glasses />
-            </div> 
           </div>
 
           <!-- checkbox named Keep me logged in -->
@@ -80,14 +82,14 @@ const login = () => {
           </div>
 
           <button type="submit">Log In</button>
-          <p class="sign-up">Become a member <router-link to="/register">Join CodeVault</router-link></p>
+          <div class="sign-up">Become a member <router-link to="/register">Join CodeVault</router-link></div>
         </form>
       </div>
     </div>
   </div>
 </template>
 
-<style scoped>
+<style scoped>  
 .full-screen {
   position: absolute;
   top: 0%;
@@ -97,6 +99,7 @@ const login = () => {
   background: url("../assets/login-background.png") no-repeat ;
   background-size: 100% 100%;
 }
+
 .center {
   position: relative;
   margin-top: 7.5%;
@@ -139,7 +142,7 @@ const login = () => {
   height: 5%;
   margin-bottom: 20px;
   border-radius: 5px;
-  font-size: 1.3rem;
+  font-size: 1rem;
 }
 
 .box input {
@@ -150,8 +153,14 @@ const login = () => {
   height: 100%;
   border: none;
   outline: none;
-  font-size: 1.5rem;
+  font-size: 1rem;
   border-radius: 10px;
+}
+
+.input-wrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
 }
 
 .eye {
@@ -159,29 +168,41 @@ const login = () => {
   display: flex;
   justify-content: center;
   align-items: center;
-  top: 70%;
+  top: 50%;
   right: 5%;
-  width: 10%
+  width: 10%;
+  transform: translate(0, -50%);
 }
 
 /* 使得checkbox和它的label在同一行 */
 .extra-feature {
+  position: relative;
   margin-top: 8%;
   width: 80%;
   display: flex;
   flex-direction: row;
   justify-content: center;
-  font-size: 1.4rem;
+  font-size: 1rem;
 }
 
 .left-extra {
+  position: relative;
   display: flex;
+  /* 块内元素居中 */
+  justify-content: center;
+  align-items: center;
   width: 50%;
 }
 
+.right-extra {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  width: 50%;
+}
 .sign-up {
   margin-top: 5%;
-  font-size: 1.4rem;
+  font-size: 1rem;
 }
 
 button {
@@ -191,7 +212,7 @@ button {
   height: 5%;
   border: none;
   border-radius: 5px;
-  font-size: 1.2rem;
+  font-size: 1rem;
   cursor: pointer;
   background-color: #71e69e;
   transition: background-color 0.3s ease;
@@ -208,19 +229,23 @@ svg {
 
 input[type="checkbox"] {
   /* 隐藏原始勾选标记 */
-  margin-top: 2%;
   -webkit-appearance: none;
   -moz-appearance: none;
   appearance: none;
   outline: none;
+  box-sizing: border-box;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: middle;
 }
 
 input[type="checkbox"]::before {
   /* 创建自定义勾选标记 */
-  content: "";
+  content: " ";
+  font-size: 19px;
   display: inline-block;
-  width: 20px;
-  height: 20px;
+  width: 15px;
+  height: 15px;
   border: 2px solid #5ac38c;
   border-radius: 3px;
 }
@@ -231,7 +256,7 @@ input[type="checkbox"]:hover::before {
 
 input[type="checkbox"]:checked::before {
   content: "✔️"; /* 使用Unicode字符表示勾选标记 */
-  text-align: center;
+  font-size: 0.85rem;
   background-color: #5ac38c; /* 改变勾选标记的颜色 */
 }
 
@@ -240,6 +265,6 @@ a {
 }
 
 h2 {
-  font-size: 2.5rem;
+  font-size: 2.2rem;
 }
 </style>

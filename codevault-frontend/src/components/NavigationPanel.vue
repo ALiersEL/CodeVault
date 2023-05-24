@@ -30,15 +30,15 @@
 .navigation-container {
     display: flex;
     align-items: center;
-    height: 80px;
+    height: 60px;
     box-shadow: 0 0 20px #eeeeee;
-    font-size: 1.5rem;
+    font-size: 1rem;
 }
 .logo {
     margin-top: 5px;
     margin-left: 10px;
-    width: 50px;
-    height: 50px;
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
 }
 .navigation-link {
@@ -46,7 +46,7 @@
     margin-left: 50px;
     color: white;
     text-decoration: none;
-    font-size: 20px;
+    font-size: 1rem;
 }
 .navigation-link-active{
     color: black;
