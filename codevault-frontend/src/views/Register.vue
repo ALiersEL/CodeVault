@@ -11,42 +11,51 @@ const togglePassword = () => {
   isVisible.value = !isVisible.value;
 };
 
+// // computed
+// const autoCompleteOptions = computed(() => {
+//   return ["@gmail.com", "@163.com", "@qq.com"].map((suffix) => {
+//     const prefix = email.value.split("@")[0];
+//     return {
+//       label: prefix + suffix,
+//       value: prefix + suffix,
+//     };
+//   });
+// });
+
 let username = ref("");
 let password = ref("");
 let email = ref("");
 let phoneNumber = ref("");
 
 const register = () => {
-    console.log("register");
+  console.log("register");
 
-    const user = {
-        userName: username.value,
-        passwordHash: SHA256(password.value).toString(),
-        email: email.value,
-        phoneNumber: phoneNumber.value
-    };
+  const user = {
+    userName: username.value,
+    passwordHash: SHA256(password.value + SHA256(username.value) + 'hlytbnpOQA').toString(),
+    email: email.value,
+    phoneNumber: phoneNumber.value,
+  };
 
-    console.log(user);
+  console.log(user);
 
-    //用axios把user传到后端
-    postMapping("/user/register", user).then((res) => {
-        console.log(res);
-        if (res.data.code === 200) {
-            alert("注册成功");
-            router.push("/home");
-        } else {
-            alert(res.data.msg);
-        }
-    });
+  //用axios把user传到后端
+  postMapping("/user/register", user).then((res) => {
+    console.log(res);
+    if (res.data.code === 200) {
+      alert("注册成功");
+      router.push("/home");
+    } else {
+      alert(res.data.msg);
+    }
+  });
 };
-
 </script>
 
 <template>
   <div class="full-screen">
     <div class="center">
-      <div class="left">
-      </div>
+      <div class="left"></div>
 
       <div class="right">
         <form class="content" @submit.prevent="register">
@@ -54,32 +63,40 @@ const register = () => {
 
           <div class="box">
             <div>Username</div>
-            <input type="text" v-model="username" required/>
+            <input type="text" v-model="username" required />
           </div>
 
           <div class="box">
             <div>Password</div>
-            <input :type="isVisible ? 'text' : 'password'" v-model="password" required/>
-            <div v-if="isVisible" class="eye" @click="togglePassword">
+            <div class="input-wrapper">
+              <input
+                :type="isVisible ? 'text' : 'password'"
+                v-model="password"
+                required
+              />
+              <div v-if="isVisible" class="eye" @click="togglePassword">
                 <GlassesOutline />
-            </div>
-            <div v-if="!isVisible" class="eye" @click="togglePassword">
+              </div>
+              <div v-if="!isVisible" class="eye" @click="togglePassword">
                 <Glasses />
-            </div> 
+              </div>
+            </div>
           </div>
-          
+
           <div class="box">
             <div>Email</div>
-            <input type="email" v-model="email" required/>
+            <input type="email" v-model="email" required />
           </div>
 
           <div class="box">
             <div>Phone number</div>
-            <input type="tel" v-model="phoneNumber"/>
+            <input type="tel" v-model="phoneNumber" />
           </div>
 
-          <button type="submit" >Sign Up</button>
-          <p class="log-in">Already a member? <router-link to="/login">Log In</router-link></p>
+          <button type="submit">Sign Up</button>
+          <p class="log-in">
+            Already a member? <router-link to="/login">Log In</router-link>
+          </p>
         </form>
       </div>
     </div>
@@ -93,7 +110,7 @@ const register = () => {
   left: 0%;
   height: 100%;
   width: 100%;
-  background: url("../assets/login-background.png") no-repeat ;
+  background: url("../assets/login-background.png") no-repeat;
   background-size: 100% 100%;
 }
 .center {
@@ -110,7 +127,8 @@ const register = () => {
   position: relative;
   width: 66%;
   height: 100%;
-  background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)),url("../assets/rainy_day_in_tokyo.jpg") no-repeat; 
+  background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)),
+    url("../assets/rainy_day_in_tokyo.jpg") no-repeat;
   background-size: 100% 100%;
   /* background-color: #777; */
 }
@@ -139,7 +157,7 @@ const register = () => {
   height: 5%;
   margin-bottom: 20px;
   border-radius: 5px;
-  font-size: 1.3rem;
+  font-size: 1rem;
 }
 
 .box input {
@@ -150,8 +168,14 @@ const register = () => {
   height: 100%;
   border: none;
   outline: none;
-  font-size: 1.5rem;
+  font-size: 1rem;
   border-radius: 10px;
+}
+
+.input-wrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
 }
 
 .eye {
@@ -159,14 +183,15 @@ const register = () => {
   display: flex;
   justify-content: center;
   align-items: center;
-  top: 70%;
+  top: 60%;
   right: 5%;
-  width: 10%
+  width: 10%;
+  transform: translate(0, -50%);
 }
 
 .log-in {
   margin-top: 5%;
-  font-size: 1.4rem;
+  font-size: 1rem;
 }
 
 button {
@@ -176,15 +201,25 @@ button {
   height: 5%;
   border: none;
   border-radius: 5px;
-  font-size: 1.2rem;
+  font-size: 1rem;
   cursor: pointer;
   background-color: #71e69e;
   transition: background-color 0.3s ease;
 }
 
 button:hover {
+  background-image: linear-gradient(
+    to right,
+    #71e69e,
+    #6bdd9a,
+    #65d495,
+    #5fcc91,
+    #5ac38c
+  );
+}
 
-  background-image: linear-gradient(to right, #71e69e, #6bdd9a, #65d495, #5fcc91, #5ac38c);
+svg {
+  color: #777;
 }
 
 a {
@@ -192,6 +227,6 @@ a {
 }
 
 h2 {
-  font-size: 2.5rem;
+  font-size: 2.2rem;
 }
 </style>
