@@ -44,7 +44,7 @@ const register = () => {
     console.log(res);
     if (res.data.code === 200) {
       alert("注册成功");
-      router.push("/home");
+      router.push("/login");
     } else {
       alert(res.data.msg);
     }

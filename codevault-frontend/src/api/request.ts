@@ -10,13 +10,19 @@ const request = axios.create({
             return qs.stringify(data) 
         } 
     ],*/ 
+    headers: {
+        'Content-Type': 'application/json',
+    },
     timeout: 5000,
 });
 
 // 请求拦截器配置 
 request.interceptors.request.use( 
     config => { 
-        config.headers['Authorization'] = 'bearer';
+        const token = localStorage.getItem('token');
+        if (token) {
+            config.headers['Authorization'] = 'Bearer ' + token;
+        }
         console.log("config===>", config);
         return config;
     },

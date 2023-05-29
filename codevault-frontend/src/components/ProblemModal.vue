@@ -21,7 +21,7 @@ const handleClose = () => {
 
 <template>
   <div>
-    <n-button @click="showModal = true"> 来吧 </n-button>
+    <n-button @click="showModal = true"> 新增题目 </n-button>
     <n-modal v-model:show="showModal">
       <n-card
         title="新增题目"

@@ -2,6 +2,7 @@ CREATE TABLE "user" (
     user_id SERIAL PRIMARY KEY,
     user_name VARCHAR(50) NOT NULL UNIQUE,
     password_hash VARCHAR(100) NOT NULL,
+    role SMALLINT NOT NULL DEFAULT 1,
     date_registered TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     phone_number VARCHAR(20),
     email VARCHAR(50),
@@ -10,7 +11,7 @@ CREATE TABLE "user" (
     ac_hard INTEGER NOT NULL DEFAULT 0,
     total_easy INTEGER NOT NULL DEFAULT 0,
     total_medium INTEGER NOT NULL DEFAULT 0,
-    total_hard INTEGER NOT NULL DEFAULT 0
+    total_hard INTEGER NOT NULL DEFAULT 0,
 );
 
 CREATE TABLE folder (
@@ -53,7 +54,7 @@ CREATE TABLE post (
 CREATE TABLE problem (
     problem_id SERIAL PRIMARY KEY,
     problem_title VARCHAR(100) NOT NULL,
-    problem_content TEXT NOT NULL,
+    problem_content JSONB NOT NULL,
     problem_type SMALLINT,
     difficulty SMALLINT,
     status BOOLEAN NOT NULL DEFAULT FALSE,
@@ -160,3 +161,21 @@ CREATE TABLE note_image (
     ON DELETE CASCADE,
     PRIMARY KEY (note_id, image_id)
 );
+
+
+-- 新增用户， 用触发器自动添加该用户的根目录
+CREATE OR REPLACE FUNCTION add_root_folder()
+RETURNS TRIGGER AS $$
+BEGIN
+    INSERT INTO folder (folder_name, user_id)
+    VALUES ('root', NEW.user_id);
+    RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER add_root_folder_trigger
+AFTER INSERT ON "user"
+FOR EACH ROW
+EXECUTE FUNCTION add_root_folder();
+
+

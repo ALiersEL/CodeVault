@@ -4,8 +4,8 @@ spring:
       ddl-auto: update
   datasource:
     url: jdbc:postgresql://${POSTGRESQL_HOST:localhost}:5432/code_vault
-    username: 
-    password:
+    username: jose
+    password: joezhusmysql
     driver-class-name: org.postgresql.Driver
 
 server:
@@ -14,3 +14,10 @@ server:
 
 mybatis:
   config-location: classpath:config/mybatis-config.xml
+  type-handlers-package: com.aliersel.codevaultbackend.handler
+
+security:
+  jwt:
+      token:
+        secret-key: 3bb069b3d5feaa0146f8bb741bb9cb1389f729a8dc0152c3be5b756f079b55bc
+        expire-length: 3600000
