@@ -1,9 +1,10 @@
-user(<u>user_id</u>, user_name, password_hash, date_registered, phone_number, email, ac_easy, ac_medium, ac_hard, total_easy, total_medium, total_hard)
+user(<u>user_id</u>, user_name, password_hash, role, date_registered, phone_number, email, ac_easy, ac_medium, ac_hard, total_easy, total_medium, total_hard)
 ```PgSQL
 CREATE TABLE "user" (
     user_id SERIAL PRIMARY KEY,
     user_name VARCHAR(50) NOT NULL UNIQUE,
     password_hash VARCHAR(100) NOT NULL,
+    role SMALLINT NOT NULL DEFAULT 1,
     date_registered TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     phone_number VARCHAR(20),
     email VARCHAR(50) NOT NULL,
@@ -37,7 +38,7 @@ problem(<u>problem_id</u>, problem_title, problem_content, problem_type, difficu
 CREATE TABLE problem (
     problem_id SERIAL PRIMARY KEY,
     problem_title VARCHAR(100) NOT NULL,
-    problem_content TEXT NOT NULL,
+    problem_content JSONB NOT NULL,
     problem_type SMALLINT,
     difficulty SMALLINT,
     status BOOLEAN NOT NULL DEFAULT FALSE,

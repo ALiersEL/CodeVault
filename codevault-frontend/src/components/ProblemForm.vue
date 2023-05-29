@@ -16,26 +16,53 @@ import {
   AutoCompleteInst,
   NSelect,
   NTag,
+  FormInst,
 } from "naive-ui";
 // 导入富文本编辑器quill
-import QuillEditor from "../components/QuillEditor.vue";
+import { QuillEditor } from "@vueup/vue-quill";
+import "@vueup/vue-quill/dist/vue-quill.snow.css";
+import { postMapping } from "../api/request";
+
+const formRef = ref<FormInst | null>(null);
+
+type problemType = {
+  problemTitle: string | null;
+  problemContent: string | null;
+  problemType: number | null;
+  difficulty: number | null;
+  mastery: number | null;
+  status: boolean | null;
+  tags: string[];
+  companyName: string | null;
+  departmentName: string | null;
+  postName: string | null;
+};
+
+const problem = ref<problemType>({
+  problemTitle: null,
+  problemContent: null,
+  problemType: null,
+  difficulty: null,
+  mastery: 0,
+  status: false,
+  tags: [] as string[],
+  companyName: null,
+  departmentName: null,
+  postName: null,
+});
 
 // rules
 const rules = {
-  problemTitle: [
-    {
-      required: true,
-      message: "请输入题目标题",
-      trigger: "blur",
-    },
-  ],
-  problemContent: [
-    {
-      required: true,
-      message: "请输入题目描述",
-      trigger: "blur",
-    },
-  ],
+  problemTitle: {
+    required: true,
+    message: "请输入题目标题",
+    trigger: ["blur", "input"],
+  },
+  problemContent: {
+    required: true,
+    message: "请输入题目内容",
+    trigger: ["blur", "input"],
+  },
 };
 
 const difficulties = [
@@ -71,35 +98,35 @@ const tagOptionsRef = ref([
 
 const companyOptionsRef = ref([
   {
-    label: "字节跳动", 
+    label: "字节跳动",
     value: "字节跳动",
   },
   {
-    label: "阿里巴巴", 
+    label: "阿里巴巴",
     value: "阿里巴巴",
   },
   {
-    label: "腾讯", 
+    label: "腾讯",
     value: "腾讯",
   },
   {
-    label: "百度", 
+    label: "百度",
     value: "百度",
   },
   {
-    label: "美团", 
+    label: "美团",
     value: "美团",
   },
   {
-    label: "京东", 
+    label: "京东",
     value: "京东",
   },
   {
-    label: "华为", 
+    label: "华为",
     value: "华为",
   },
   {
-    label: "小米", 
+    label: "小米",
     value: "小米",
   },
 ]);
@@ -108,7 +135,6 @@ type option = {
   label: string;
   value: string;
 };
-
 
 // departmentOptions类型为option[]，用于存储当前用户的部门信息
 const departmentOptionsRef = ref<option[]>([]);
@@ -141,8 +167,12 @@ const autoFillTagOptions = computed(() => {
   // console.log(prefix);
   // 当前输入的选项在tagOptions存在时，只返回tagOptions中含有输入的内容的选项
   // 当前输入的选项在tagOptions不存在时，返回tagOptions中含有输入的内容的选项以及当前输入的选项, 当前输入的选项为prefix + " (自定义)"
-  if (tagOptionsRef.value.findIndex((option) => option.value === prefix) !== -1) {
-    return tagOptionsRef.value.filter((option) => option.value.includes(prefix));
+  if (
+    tagOptionsRef.value.findIndex((option) => option.value === prefix) !== -1
+  ) {
+    return tagOptionsRef.value.filter((option) =>
+      option.value.includes(prefix)
+    );
   } else {
     return [
       ...tagOptionsRef.value.filter((option) => option.value.includes(prefix)),
@@ -169,7 +199,7 @@ const renderTag = (tag: string, index: number) => {
   return h(
     NTag,
     {
-      type:  "success",
+      type: "success",
       closable: true,
       onClose: () => {
         problem.value.tags.splice(index, 1);
@@ -181,28 +211,57 @@ const renderTag = (tag: string, index: number) => {
   );
 };
 
-const problem = ref({
-  problemTitle: "",
-  problemContent: "",
-  problemType: 0,
-  difficulty: 0,
-  mastery: 0,
-  status: 0,
-  tags: [] as string[],
-  companyName: "",
-  departmentName: "",
-  postName: "",
-});
-
-const handleSubmit = () => {
+const handleSubmit = (e: MouseEvent) => {
+  e.preventDefault();
+  formRef.value?.validate((errors) => {
+    if (!errors) {
+      //message.success('验证成功')
+    } else {
+      console.log(errors);
+      //message.error('验证失败')
+    }
+  });
   // newTags为在problem.tags中存在，但是在tagOptions中不存在的tag
   // 将这些tag赋值给newTags
   newTags.value = problem.value.tags.filter((tag) => {
-    return tagOptionsRef.value.findIndex((option) => option.value === tag) === -1;
+    return (
+      tagOptionsRef.value.findIndex((option) => option.value === tag) === -1
+    );
   });
-  console.log(newTags.value);
+  // console.log(newTags.value);
 
   console.log(problem.value);
+  
+  const problem2 = problem.value;
+  problem2.problemContent = JSON.stringify(problem2.problemContent);
+  // 将problem和newTags穿到后端
+  postMapping("/problem/add", problem2).then((res) => {
+    console.log(res);
+    if (res.data.code === 200) {
+      alert("添加成功");
+      // 重置表单
+      formRef.value?.restoreValidation();
+      // 重置problem
+      problem.value = {
+        problemTitle: null,
+        problemContent: null,
+        problemType: null,
+        difficulty: null,
+        mastery: null,
+        status: null,
+        tags: [] as string[],
+        companyName: null,
+        departmentName: null,
+        postName: null,
+      };
+      // 重置newTags
+      newTags.value = [];
+      // 重置newTag
+      newTag.value = "";
+    } else {
+      alert("添加失败");
+    }
+  });
 };
 </script>
 
@@ -210,34 +269,26 @@ const handleSubmit = () => {
   <!-- dialog form, dialog appear from the top, a dialog with scrollable content -->
   <n-space vertical>
     <n-form
+      :ref="formRef"
       :model="problem"
-      :rule="rules"
+      :rules="rules"
       label-placement="left"
       :label-width="160"
       :style="{
         maxWidth: '1000px',
       }"
     >
-      <n-form-item label="题目标题" path="problemTitle" class="item">
-        <n-input
-          v-model:value="problem.problemTitle"
-          placeholder="Input"
-          class="input"
-        />
+      <n-form-item label="题目标题" path="problemTitle">
+        <n-input v-model:value="problem.problemTitle" />
       </n-form-item>
 
-      <n-form-item label="题目描述" path="problemContent" >
-        <!-- <n-input
-          v-model:value="problem.problemContent"
-          placeholder="Textarea"
-          type="textarea"
-          :autosize="{
-            minRows: 3,
-            maxRows: 5,
-          }"
-        /> -->
+      <n-form-item label="题目描述" path="problemContent">
         <div>
-          <QuillEditor />
+          <QuillEditor
+            v-model:content="problem.problemContent"
+            toolbar="full"
+            theme="snow"
+          />
         </div>
       </n-form-item>
 

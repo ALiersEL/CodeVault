@@ -5,7 +5,7 @@ import NavigationPanel from "../components/NavigationPanel.vue";
 <template>
     <div>
         <NavigationPanel />
-        <p>This is about</p>
+        <p>CodeVault is a relational database-based website for managing interview questions, featuring two types of questions - algorithmic and textual.</p>
     </div>
 </template>
 

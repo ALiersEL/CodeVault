@@ -4,6 +4,7 @@ import { ref } from "vue";
 import { postMapping } from "../api/request";
 import router from "../router";
 import SHA256 from "crypto-js/sha256";
+// import { messageDark, useMessage } from "naive-ui";
 
 const isVisible = ref(false);
 
@@ -26,12 +27,16 @@ const login = () => {
 
   //用axios把user传到后端
   postMapping("/user/login", user).then((res) => {
+    // const message = useMessage();
     console.log(res);
     if (res.data.code === 200) {
-      alert("登录成功");
+      // message.success("登录成功");
+      // 将token存入localStorage
+      console.log(res.data.data.token);
+      localStorage.setItem("token", res.data.data.token);
       router.push("/home");
     } else if(res.data.code === 400){
-      alert(res.data.msg);
+      // message.error(res.data.msg);
     }
   });
 }

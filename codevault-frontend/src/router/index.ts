@@ -4,32 +4,40 @@ import { createRouter, createWebHistory, RouteRecordRaw } from "vue-router";
 const routes: Array<RouteRecordRaw> = [
   { 
     path: "/", 
-    component: () => import("../views/Home.vue") },
+    component: () => import("../views/Home.vue"),
+    meta: { requiresAuth: true },
+  },
   {
     path: "/home",
     component: () => import("../views/Home.vue"),
+    meta: { requiresAuth: true },
     children: [
     ],
   },
   {
     path: "/problemset",
     component: () => import("../views/Problemset.vue"),
+    meta: { requiresAuth: true },
   },
   {
     path: "/me",
     component: () => import("../views/Me.vue"),
+    meta: { requiresAuth: true },
   },
   {
     path: "/about",
     component: () => import("../views/About.vue"),
+    meta: { requiresAuth: false },
   },
   {
     path: "/login",
     component: () => import("../views/Login.vue"),
+    meta: { requiresAuth: false },
   },
   {
     path: "/register",
     component: () => import("../views/Register.vue"),
+    meta: { requiresAuth: false },
   }
 ]
 
@@ -38,5 +46,28 @@ const router =  createRouter({
      history: createWebHistory(),
      routes 
 });
+
+
+const checkUserLoggedIn = () => {
+  // 检查用户是否登录
+  // 从localStorage中获取token
+  const token = localStorage.getItem('token');
+  // 如果token存在，则返回true，否则返回false
+  return !!token;
+};
+
+// //进入页面之前判断用户是否登录
+// router.beforeEach((to, from, next) => {
+//   const isLoggedIn = checkUserLoggedIn(); // 检查用户是否登录的函数
+//   if (to.meta.requiresAuth && !isLoggedIn) {
+//     // 如果需要登录才能访问，并且用户未登录
+//     next({
+//       path: '/login',
+//       query: {redirect: from.fullPath}  // 将跳转的路由path作为参数，登录成功后跳转到该路由
+//     })    
+//   } else {
+//     next(); // 放行，继续访问目标页面
+//   }
+// });
 
 export default router;

@@ -1,29 +1,31 @@
 <script setup lang="ts">
+import AvatarDropdown from "../components/AvatarDropdown.vue";
 </script>
 
 <template>
-<div class="navigation-container">
-    <router-link to="/">
-      <img class="logo" src="../assets/logo.jpeg" alt="Codevault logo" />
-    </router-link>
-    <router-link to="/" 
-                 class="navigation-link" 
-                 active-class="navigation-link-active"
-                 >Home
-    </router-link>
-    <router-link to="/problemset" 
-                 class="navigation-link" 
-                 active-class="navigation-link-active">Problemset
-    </router-link>
-    <router-link to="/me" 
-                 class="navigation-link" 
-                 active-class="navigation-link-active">Me
-    </router-link>
-    <router-link to="/about" 
-                 class="navigation-link" 
-                 active-class="navigation-link-active">About
-    </router-link>
-</div>
+    <div class="navigation-container">
+        <router-link to="/">
+        <img class="logo" src="../assets/logo.jpeg" alt="Codevault logo" />
+        </router-link>
+        <router-link to="/" 
+                    class="navigation-link" 
+                    active-class="navigation-link-active"
+                    >Home
+        </router-link>
+        <router-link to="/problemset" 
+                    class="navigation-link" 
+                    active-class="navigation-link-active">Problemset
+        </router-link>
+        <router-link to="/me" 
+                    class="navigation-link" 
+                    active-class="navigation-link-active">Me
+        </router-link>
+        <router-link to="/about" 
+                    class="navigation-link" 
+                    active-class="navigation-link-active">About
+        </router-link>
+        <AvatarDropdown class="avatar" />
+    </div>
 </template>
 
 <style scoped>
@@ -51,5 +53,10 @@
 .navigation-link-active{
     color: black;
     border-bottom: 2px solid black;
+}
+
+.avatar {
+    margin-left: auto;
+    margin-right: 10px;
 }
 </style>
