@@ -40,7 +40,7 @@ const register = () => {
   console.log(user);
 
   //用axios把user传到后端
-  postMapping("/user/register", user).then((res) => {
+  postMapping("/users/register", user).then((res) => {
     console.log(res);
     if (res.data.code === 200) {
       alert("注册成功");

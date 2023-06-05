@@ -40,18 +40,10 @@ const options =  [
 
 const handleSelect = (key: string) => {
   if(key === "logout") {
-    // 清除前端会话信息的操作
-
-      // 清除本地存储中的会话信息（示例使用localStorage）
-      localStorage.removeItem('token');
-      
-      // 重置 Pinia store 中与用户相关的状态
-      
-
-      // 清除后端会话信息的操作
       // 发送请求给后端，使会话失效或删除会话数据
-      postMapping("/user/logout", {}).then((res) => {
+      postMapping("/users/logout", {}).then((res) => {
         if (res.data.code === 200) {
+          localStorage.clear();
           // 重定向到登录页面
           router.push("/login");
         }

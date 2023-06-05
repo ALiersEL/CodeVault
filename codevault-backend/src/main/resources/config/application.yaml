@@ -4,17 +4,26 @@ spring:
       ddl-auto: update
   datasource:
     url: jdbc:postgresql://${POSTGRESQL_HOST:localhost}:5432/code_vault
-    username: jose
-    password: joezhusmysql
+    username: 
+    password:
     driver-class-name: org.postgresql.Driver
+    type: com.alibaba.druid.pool.DruidDataSource
+    druid:
+      initialSize: 5
+      minIdle: 5
+      maxActive: 20
+      maxWait: 60000
+      timeBetweenEvictionRunsMillis: 60000
+      minEvictableIdleTimeMillis: 300000
 
 server:
   #端口号
   port: 8765
 
 mybatis:
-  config-location: classpath:config/mybatis-config.xml
-  type-handlers-package: com.aliersel.codevaultbackend.handler
+  type-handlers-package: com.aliersel.codevaultbackend.mapper.type_handler
+  configuration:
+    map-underscore-to-camel-case: true
 
 security:
   jwt:

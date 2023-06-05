@@ -48,16 +48,18 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
         http
             .authorizeRequests()
-                .antMatchers("/user/register", "/user/login").permitAll() // 允许注册和登录页面的访问
-                .anyRequest().authenticated() // 其他页面需要进行身份验证
-                .and()
-            .formLogin()
-                .loginPage("/login") // 指定登录页面的URL
-                .defaultSuccessUrl("/") // 登录成功后跳转的URL
-                .and()
-            .logout()
-                .logoutUrl("/logout") // 指定注销URL
-                .logoutSuccessUrl("/login"); // 注销成功后跳转的URL
+                .antMatchers("/users/register").permitAll() // 允许注册和登录页面的访问
+                .antMatchers("/users/login").permitAll()
+                .antMatchers("/error").permitAll()
+                .anyRequest().authenticated(); // 其他页面需要进行身份验证
+//                .and();
+//            .formLogin()
+//                .loginPage("/login") // 指定登录页面的URL
+//                .defaultSuccessUrl("/") // 登录成功后跳转的URL
+//                .and()
+//            .logout()
+//                .logoutUrl("/logout") // 指定注销URL
+//                .logoutSuccessUrl("/login"); // 注销成功后跳转的URL
 
         // If a user try to access a resource without having enough permissions
         http.exceptionHandling().accessDeniedPage("/login");

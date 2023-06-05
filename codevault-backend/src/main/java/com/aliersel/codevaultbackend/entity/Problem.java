@@ -23,9 +23,6 @@ public class Problem {
     Integer mastery;
     OffsetDateTime dateAdded;
     OffsetDateTime lastModified;
-    Integer companyID;
-    Integer departmentID;
-    Integer postID;
     Integer userID;
     Integer folderID;
 }

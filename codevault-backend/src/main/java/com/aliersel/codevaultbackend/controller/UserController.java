@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/user")
+@RequestMapping("/users")
 public class UserController {
     @Autowired
     private UserService userService;
@@ -23,5 +23,10 @@ public class UserController {
     @PostMapping("/login")
     public Result login(@RequestBody User user) {
         return userService.login(user);
+    }
+
+    @PostMapping("/logout")
+    public Result logout(@RequestBody User user) {
+        return userService.logout(user);
     }
 }

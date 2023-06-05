@@ -1,5 +1,7 @@
 import axios from "axios"; 
 import { createDiscreteApi } from "naive-ui";
+// moment.js时间格式化插件
+import moment from "moment";
 
 // axios配置 
 const request = axios.create({ 
@@ -11,7 +13,7 @@ const request = axios.create({
         } 
     ],*/ 
     headers: {
-        'Content-Type': 'application/json',
+        // 'Access-Control-Allow-Origin': '*', // 允许跨域请求
     },
     timeout: 5000,
 });
@@ -20,10 +22,14 @@ const request = axios.create({
 request.interceptors.request.use( 
     config => { 
         const token = localStorage.getItem('token');
-        if (token) {
+        const expires = localStorage.getItem('expires');
+        if(token && expires && moment().isBefore(expires)){
             config.headers['Authorization'] = 'Bearer ' + token;
         }
-        console.log("config===>", config);
+        else {
+            localStorage.removeItem('token');
+            localStorage.removeItem('expires');
+        }
         return config;
     },
     error => { 
@@ -37,11 +43,12 @@ request.interceptors.response.use(
     response => { 
         if (response.status === 404) { 
             message.error("请求未找到"); 
-        } else if(response.status != 200){ 
+        } else if(response.status != 200){
             return Promise.reject("网络请求错误"); 
         }
         return response; 
     }, error => { 
+        console.log(error.response.data);
         const {code} = error; 
         if ("ERR_BAD_RESPONSE" === code) { 
             message.error("网络请求异常"); 
@@ -54,7 +61,7 @@ request.interceptors.response.use(
 )
 
 // 1. GET 请求封装,注意get请求传递参数的属性为params,如果写成data:data,则springboot后端的 @getMapping映射不到 
-export const getMapping = (url: string, data: any, token: any) => { 
+export const getMapping = (url: string, data: any) => { 
     return request.get(url, { 
         params: data, 
     }) 
@@ -86,7 +93,7 @@ export const deleteMapping = (url: string, data: any) => {
 // 自定义请求,可传入method、url、data的属性值 
 export const requestMapping = (method: string, url: string, data: any) => { 
     if ('get' == method || 'GET' == method) { 
-        return getMapping(url, data, null); 
+        return getMapping(url, data); 
     } else { 
         return request({ 
             method: method,
