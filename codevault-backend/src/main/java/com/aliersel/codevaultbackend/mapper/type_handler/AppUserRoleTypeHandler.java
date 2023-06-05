@@ -1,4 +1,4 @@
-package com.aliersel.codevaultbackend.handler;
+package com.aliersel.codevaultbackend.mapper.type_handler;
 
 import com.aliersel.codevaultbackend.constant.enums.AppUserRole;
 import org.apache.ibatis.type.BaseTypeHandler;

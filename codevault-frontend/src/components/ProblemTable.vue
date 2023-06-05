@@ -3,10 +3,12 @@ import { h } from "vue";
 import { NSpace, NDataTable, NTag, NButton } from "naive-ui";
 import type { DataTableColumns } from "naive-ui";
 import { onMounted } from "vue";
+import router from "../router";
 import { getMapping } from "../api/request";
 
 type RowData = {
   key: number
+  status: string
   problemTitle: string
   problemType: string
   difficulty: string
@@ -20,8 +22,28 @@ const createColumns = ({
 }): DataTableColumns<RowData> => {
   return [
     {
+      title: "状态",
+      key: "status"
+    },
+    {
       title: "题目标题",
       key: "problemTitle",
+      // problemTitle在hover变蓝色，点击后跳转到题目详情页
+      render (row) {
+        return h(
+          'div',
+          {
+            style: 'cursor: pointer;',
+            // hover
+            onClick: () => {
+              router.push(`/problem/${row.problemID}`)
+            }
+          },
+          {
+            default: () => row.problemTitle
+          }
+        )
+      }
     },
     {
       title: "题目类型",
@@ -73,6 +95,7 @@ const createColumns = ({
 const createData = (): RowData[] => [
   {
     key: 0,
+    status: "Accepted",
     problemTitle: "A + B Problem",
     problemType: "Algorithmic",
     difficulty: "easy",
@@ -80,6 +103,7 @@ const createData = (): RowData[] => [
   },
   {
     key: 1,
+    status: "Accepted",
     problemTitle: "A + B Problem",
     problemType: "Algorithmic",
     difficulty: "easy",
@@ -87,6 +111,7 @@ const createData = (): RowData[] => [
   },
   {
     key: 2,
+    status: "Accepted",
     problemTitle: "A + B Problem",
     problemType: "Algorithmic",
     difficulty: "easy",
@@ -112,6 +137,13 @@ onMounted(() => {
     // });
 });
 
+// rowClassName
+const rowClassName = (row: RowData) => {
+    if (row.selected = true) {
+        return "hover";
+    }
+    return "";
+};
 </script>
 
 <template>
@@ -122,10 +154,14 @@ onMounted(() => {
             :columns="columns"
             :data="data"
             :pagination="pagination"
+            :row-class-name="rowClassName"
             />
         </n-space>
     </div>
 </template>
 
 <style scoped>
+:deep(.hover) {
+  color: #1890ff;
+}
 </style>

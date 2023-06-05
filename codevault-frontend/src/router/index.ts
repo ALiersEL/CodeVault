@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory, RouteRecordRaw } from "vue-router";
+import moment from 'moment';
 
 //定义路由
 const routes: Array<RouteRecordRaw> = [
@@ -50,24 +51,26 @@ const router =  createRouter({
 
 const checkUserLoggedIn = () => {
   // 检查用户是否登录
-  // 从localStorage中获取token
   const token = localStorage.getItem('token');
-  // 如果token存在，则返回true，否则返回false
-  return !!token;
+  const expires = localStorage.getItem('expires');
+  if(token && expires && moment().isBefore(expires)){
+      return true;
+  }
+  return false;
 };
 
-// //进入页面之前判断用户是否登录
-// router.beforeEach((to, from, next) => {
-//   const isLoggedIn = checkUserLoggedIn(); // 检查用户是否登录的函数
-//   if (to.meta.requiresAuth && !isLoggedIn) {
-//     // 如果需要登录才能访问，并且用户未登录
-//     next({
-//       path: '/login',
-//       query: {redirect: from.fullPath}  // 将跳转的路由path作为参数，登录成功后跳转到该路由
-//     })    
-//   } else {
-//     next(); // 放行，继续访问目标页面
-//   }
-// });
+//进入页面之前判断用户是否登录
+router.beforeEach((to, from, next) => {
+  const isLoggedIn = checkUserLoggedIn(); // 检查用户是否登录的函数
+  if (to.meta.requiresAuth && !isLoggedIn) {
+    // 如果需要登录才能访问，并且用户未登录
+    next({
+      path: '/login',
+      query: {redirect: from.fullPath}  // 将跳转的路由path作为参数，登录成功后跳转到该路由
+    })    
+  } else {
+    next(); // 放行，继续访问目标页面
+  }
+});
 
 export default router;

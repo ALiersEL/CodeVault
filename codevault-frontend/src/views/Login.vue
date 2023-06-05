@@ -4,7 +4,7 @@ import { ref } from "vue";
 import { postMapping } from "../api/request";
 import router from "../router";
 import SHA256 from "crypto-js/sha256";
-// import { messageDark, useMessage } from "naive-ui";
+// import { useMessage } from "naive-ui";
 
 const isVisible = ref(false);
 
@@ -16,29 +16,32 @@ let username = ref("");
 let password = ref("");
 
 const login = () => {
-  console.log("login");
 
   const user = {
     userName: username.value,
     passwordHash: SHA256(password.value + SHA256(username.value) + 'hlytbnpOQA').toString(),
   };
 
-  console.log(user);
-
   //用axios把user传到后端
-  postMapping("/user/login", user).then((res) => {
-    // const message = useMessage();
-    console.log(res);
-    if (res.data.code === 200) {
-      // message.success("登录成功");
-      // 将token存入localStorage
-      console.log(res.data.data.token);
-      localStorage.setItem("token", res.data.data.token);
-      router.push("/home");
-    } else if(res.data.code === 400){
-      // message.error(res.data.msg);
-    }
-  });
+  postMapping("/users/login", user)
+    .then((res) => {
+      // const message = useMessage();
+      if (res.data.code === 200) {
+        // message.success("登录成功");
+        // 将token存入localStorage
+        localStorage.setItem("username", username.value);
+        console.log(res.data.data.expires);
+        localStorage.setItem("expires", res.data.data.expires);
+        console.log(res.data.data.token);
+        localStorage.setItem("token", res.data.data.token);
+        router.push("/home");
+      } else if(res.data.code === 400){
+        // message.error(res.data.msg);
+      }
+    })
+    .catch((error) => {
+      console.log('请求错误：', error);
+    });
 }
 
 

@@ -19,6 +19,7 @@ import org.springframework.stereotype.Component;
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import java.security.Key;
+import java.time.OffsetDateTime;
 import java.util.Base64;
 import java.util.Date;
 import java.util.List;
@@ -36,7 +37,7 @@ public class JwtTokenProvider {
     private String secretKey;
 
     @Value("${security.jwt.token.expire-length:3600000}")
-    private long validityInMilliseconds = 3600000; // 1h
+    private long validityInMilliseconds;
 
     @Autowired
     private MyUserDetails myUserDetails;
@@ -51,13 +52,13 @@ public class JwtTokenProvider {
         claims.put("userid", userid);
         claims.put("auth", appUserRoles.stream().map(s -> new SimpleGrantedAuthority(s.getAuthority())).filter(Objects::nonNull).collect(Collectors.toList()));
 
-        Date now = new Date();
-        Date validity = new Date(now.getTime() + validityInMilliseconds);
+        OffsetDateTime now = OffsetDateTime.now();
+        OffsetDateTime validity = now.plusSeconds(validityInMilliseconds / 1000);
 
         return Jwts.builder()//
                 .setClaims(claims)//
-                .setIssuedAt(now)//
-                .setExpiration(validity)//
+                .setIssuedAt(Date.from(now.toInstant()))//
+                .setExpiration(Date.from(validity.toInstant()))//
                 .signWith(Keys.hmacShaKeyFor(Decoders.BASE64.decode(secretKey)))//
                 .compact();
     }
@@ -75,6 +76,10 @@ public class JwtTokenProvider {
         return (Integer) Jwts.parserBuilder().setSigningKey(Keys.hmacShaKeyFor(Decoders.BASE64.decode(secretKey))).build().parseClaimsJws(token).getBody().get("userid");
     }
 
+    public OffsetDateTime getExpireTime(String token) {
+        return OffsetDateTime.ofInstant(Jwts.parserBuilder().setSigningKey(Keys.hmacShaKeyFor(Decoders.BASE64.decode(secretKey))).build().parseClaimsJws(token).getBody().getExpiration().toInstant(), OffsetDateTime.now().getOffset());
+    }
+
     public String resolveToken(HttpServletRequest req) {
         String bearerToken = req.getHeader("Authorization");
         if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
@@ -88,6 +93,7 @@ public class JwtTokenProvider {
             Jwts.parserBuilder().setSigningKey(Keys.hmacShaKeyFor(Decoders.BASE64.decode(secretKey))).build().parseClaimsJws(token);
             return true;
         } catch (JwtException | IllegalArgumentException e) {
+//            System.out.println(e.getMessage());
             throw new CustomException("Expired or invalid JWT token", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
