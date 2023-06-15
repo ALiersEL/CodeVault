@@ -40,4 +40,7 @@ public interface UserMapper {
     @Select("SELECT department_id FROM department WHERE department_name = #{departmentName} AND company_id = #{companyID}")
     Integer findDepartmentIDByName(String departmentName, Integer companyID);
 
+    @Select("SELECT problem_id FROM problem WHERE user_id = #{userID}")
+    List<Integer> findProblemIDsByUserID(Integer userID);
+
 }

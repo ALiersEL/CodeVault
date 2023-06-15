@@ -150,7 +150,7 @@ const login = () => {
   height: 5%;
   margin-bottom: 20px;
   border-radius: 5px;
-  font-size: 1rem;
+  font-size: 15px;
 }
 
 .box input {
@@ -161,7 +161,7 @@ const login = () => {
   height: 100%;
   border: none;
   outline: none;
-  font-size: 1rem;
+  font-size: 15px;
   border-radius: 10px;
 }
 
@@ -190,7 +190,7 @@ const login = () => {
   display: flex;
   flex-direction: row;
   justify-content: center;
-  font-size: 1rem;
+  font-size: 15px;
 }
 
 .left-extra {
@@ -210,7 +210,7 @@ const login = () => {
 }
 .sign-up {
   margin-top: 5%;
-  font-size: 1rem;
+  font-size: 15px;
 }
 
 button {
@@ -220,7 +220,7 @@ button {
   height: 5%;
   border: none;
   border-radius: 5px;
-  font-size: 1rem;
+  font-size: 15px;
   cursor: pointer;
   background-color: #71e69e;
   transition: background-color 0.3s ease;
@@ -264,7 +264,7 @@ input[type="checkbox"]:hover::before {
 
 input[type="checkbox"]:checked::before {
   content: "✔️"; /* 使用Unicode字符表示勾选标记 */
-  font-size: 0.85rem;
+  font-size: 12.75px;
   background-color: #5ac38c; /* 改变勾选标记的颜色 */
 }
 
@@ -273,6 +273,6 @@ a {
 }
 
 h2 {
-  font-size: 2.2rem;
+  font-size: 33px;
 }
 </style>

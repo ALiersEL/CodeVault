@@ -10,9 +10,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -44,7 +44,7 @@ public class UserServiceImpl implements UserService {
     public Result login(User user) {
 //        System.out.println(user);
         User realUser = userMapper.findByUserName(user.getUserName());
-        System.out.println(realUser);
+//        System.out.println(realUser);
         if (realUser == null) {
             return ResultUtil.error(400, "User not found");
         }
@@ -133,6 +133,19 @@ public class UserServiceImpl implements UserService {
         } catch (Exception e) {
             e.printStackTrace();
             return ResultUtil.error(400, "Find department ID failed");
+        }
+    }
+
+    @Override
+    public Result getProblemsByUserID(Integer userID) {
+        try {
+            List<Integer> list = userMapper.findProblemIDsByUserID(userID);
+            // To be continued
+
+            return ResultUtil.success();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResultUtil.error(400, "Get problems failed");
         }
     }
 }

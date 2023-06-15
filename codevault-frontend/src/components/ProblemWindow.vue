@@ -32,7 +32,9 @@ const toggleEdit = () => {
 
 <style scoped>
 .container {
-  margin: 20px;
-  width: 40%;
+  width: 100%;
+  margin-left: 10px;
+  margin-right: 10px;
+  margin-top: 10px;
 }
 </style>

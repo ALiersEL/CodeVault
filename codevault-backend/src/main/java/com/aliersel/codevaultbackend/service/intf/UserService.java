@@ -13,4 +13,5 @@ public interface UserService {
     Result<Integer> addCategory(Category category);
     Result<Integer> findCompanyID(String companyName, Integer userID);
     Result<Integer> findDepartmentID(String departmentName, Integer companyID);
+    Result getProblemsByUserID(Integer userID);
 }

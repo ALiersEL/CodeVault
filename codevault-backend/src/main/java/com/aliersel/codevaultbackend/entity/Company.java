@@ -10,7 +10,7 @@ import lombok.ToString;
 @AllArgsConstructor
 @ToString
 public class Company {
-    Integer companyID;
-    String companyName;
-    Integer userID;
+    private Integer companyID;
+    private String companyName;
+    private Integer userID;
 }

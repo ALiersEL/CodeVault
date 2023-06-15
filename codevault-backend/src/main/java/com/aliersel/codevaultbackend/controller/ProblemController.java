@@ -1,6 +1,5 @@
 package com.aliersel.codevaultbackend.controller;
 
-import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import com.aliersel.codevaultbackend.entity.*;
@@ -24,7 +23,7 @@ public class ProblemController {
     @Autowired
     private JwtTokenProvider jwtTokenProvider;
 
-    @PostMapping("/add")
+    @PostMapping
     // 从header中获取token，从token中获取userID，从requestBody中获取problem
     public Result add(@RequestHeader("Authorization") String token, @RequestBody JSONObject problemRequest) {
         Integer userID = jwtTokenProvider.getUserid(token.split(" ")[1].trim());
@@ -170,5 +169,48 @@ public class ProblemController {
     @GetMapping("/{ProblemID}")
     public Result get(@PathVariable Integer ProblemID) {
         return problemService.findByProblemID(ProblemID);
+    }
+
+    @PutMapping("/{ProblemID}")
+    public Result update(@RequestHeader("Authorization") String token, @RequestBody JSONObject problemRequest) {
+        System.out.println(problemRequest);
+        return ResultUtil.success();
+    }
+
+    @DeleteMapping("/{ProblemID}")
+    public Result delete(@PathVariable Integer ProblemID) {
+        return problemService.deleteByProblemID(ProblemID);
+    }
+
+    @PostMapping("/{ProblemID}/codes")
+    public Result addCode(@PathVariable Integer ProblemID, @RequestBody Code code) {
+        code.setProblemID(ProblemID);
+        return problemService.addCode(code, ProblemID);
+    }
+
+    @GetMapping("/{ProblemID}/codes")
+    public Result<List<Code>> getCodes(@PathVariable Integer ProblemID) {
+        return problemService.findCodesByProblemID(ProblemID);
+    }
+
+    @GetMapping("/{ProblemID}/codes/{CodeID}")
+    public Result<Code> getCode(@PathVariable Integer ProblemID, @PathVariable Integer CodeID) {
+        return problemService.findCodeByCodeID(CodeID);
+    }
+
+    @PostMapping("/{ProblemID}/notes")
+    public Result addNote(@PathVariable Integer ProblemID, @RequestBody Note note) {
+        note.setProblemID(ProblemID);
+        return problemService.addNote(note, ProblemID);
+    }
+
+    @GetMapping("/{ProblemID}/notes")
+    public Result<List<Note>> getNotes(@PathVariable Integer ProblemID) {
+        return problemService.findNotesByProblemID(ProblemID);
+    }
+
+    @GetMapping("/{ProblemID}/notes/{NoteID}")
+    public Result<Note> getNote(@PathVariable Integer ProblemID, @PathVariable Integer NoteID) {
+        return problemService.findNoteByNoteID(NoteID);
     }
 }

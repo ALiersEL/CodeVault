@@ -1,5 +1,28 @@
 <script setup lang="ts">
 import AvatarDropdown from "../components/AvatarDropdown.vue";
+import { NDropdown } from "naive-ui";
+import router from "../router";
+
+const options = [
+    {
+       label: "所有题目",
+       key: "all",
+    },
+    {
+        label: "归档题目",
+        key: "archive",
+    }
+]
+const handleSelect = (key: string) => {
+    if(key === "all") {
+        // 重定向到所有题目页面
+        router.push("/problemset");
+    }
+    else if(key === "archive") {
+        // 重定向到归档题目页面
+        router.push("/folder");
+    }
+};
 </script>
 
 <template>
@@ -14,7 +37,13 @@ import AvatarDropdown from "../components/AvatarDropdown.vue";
         </router-link>
         <router-link to="/problemset" 
                     class="navigation-link" 
-                    active-class="navigation-link-active">Problemset
+                    active-class="navigation-link-active">
+            <n-dropdown trigger="hover" 
+                        size="huge"
+                        :options="options" 
+                        @select="handleSelect">
+                Problemset
+            </n-dropdown>
         </router-link>
         <router-link to="/me" 
                     class="navigation-link" 
@@ -46,7 +75,7 @@ import AvatarDropdown from "../components/AvatarDropdown.vue";
 .navigation-link {
     margin-left: auto;
     margin-left: 50px;
-    color: white;
+    color: #242424;
     text-decoration: none;
     font-size: 1rem;
 }

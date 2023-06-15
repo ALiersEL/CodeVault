@@ -10,7 +10,7 @@ import lombok.ToString;
 @AllArgsConstructor
 @ToString
 public class Post {
-    Integer postID;
-    String postName;
-    Integer departmentID;
+    private Integer postID;
+    private String postName;
+    private Integer departmentID;
 }

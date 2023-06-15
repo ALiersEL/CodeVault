@@ -9,7 +9,7 @@ export default defineConfig({
     vue(),
   ],
   server: {
-    port: 5173,
+    port: 5172,
     proxy: { // 本地开发环境通过代理实现跨域，生产环境使用 nginx 转发
       // 正则表达式写法
       '^/api': {
