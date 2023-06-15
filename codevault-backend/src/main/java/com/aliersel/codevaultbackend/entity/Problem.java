@@ -14,15 +14,15 @@ import java.time.OffsetDateTime;
 @AllArgsConstructor
 @ToString
 public class Problem {
-    Integer problemID;
-    String problemTitle;
-    String problemContent;
-    Integer problemType;
-    Integer difficulty;
-    Boolean status;
-    Integer mastery;
-    OffsetDateTime dateAdded;
-    OffsetDateTime lastModified;
-    Integer userID;
-    Integer folderID;
+    private Integer problemID;
+    private String problemTitle;
+    private String problemContent;
+    private Integer problemType;
+    private Integer difficulty;
+    private Boolean status;
+    private Integer mastery;
+    private OffsetDateTime dateAdded;
+    private OffsetDateTime lastModified;
+    private Integer userID;
+    private Integer folderID;
 }

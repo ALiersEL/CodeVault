@@ -4,8 +4,8 @@ import NavigationPanel from "../components/NavigationPanel.vue";
 
 <template>
     <div>
-    <NavigationPanel />
-    <p>This is home</p>
+        <NavigationPanel />
+        <p>This is home</p>
     </div>
 </template>
 

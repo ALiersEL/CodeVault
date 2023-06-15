@@ -1,5 +1,7 @@
 package com.aliersel.codevaultbackend.service.impl;
 
+import com.aliersel.codevaultbackend.entity.Code;
+import com.aliersel.codevaultbackend.entity.Note;
 import com.aliersel.codevaultbackend.entity.Problem;
 import com.aliersel.codevaultbackend.mapper.ProblemMapper;
 import com.aliersel.codevaultbackend.service.intf.ProblemService;
@@ -33,7 +35,23 @@ public class ProblemServiceImpl implements ProblemService {
 
     @Override
     public Result findByProblemID(Integer problemID) {
-        return ResultUtil.success(problemMapper.findByProblemID(problemID));
+        try {
+            return ResultUtil.success(problemMapper.findByProblemID(problemID));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResultUtil.error(500, "查询失败");
+        }
+    }
+
+    @Override
+    public Result deleteByProblemID(Integer problemID) {
+        try {
+            problemMapper.deleteByProblemID(problemID);
+            return ResultUtil.success();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResultUtil.error(500, "删除失败");
+        }
     }
 
     @Override
@@ -104,6 +122,68 @@ public class ProblemServiceImpl implements ProblemService {
         } catch (Exception e) {
             e.printStackTrace();
             return ResultUtil.error(500, "添加失败");
+        }
+    }
+
+    @Override
+    public Result addCode(Code code, Integer problemID) {
+        try {
+            problemMapper.addCode(code, problemID);
+            return ResultUtil.success();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResultUtil.error(500, "添加失败");
+        }
+    }
+
+    @Override
+    public Result findCodesByProblemID(Integer problemID) {
+        try {
+            return ResultUtil.success(problemMapper.findCodesByProblemID(problemID));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResultUtil.error(500, "查询失败");
+        }
+    }
+
+    @Override
+    public Result findCodeByCodeID(Integer codeID) {
+        try {
+            return ResultUtil.success(problemMapper.findCodeByCodeID(codeID));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResultUtil.error(500, "查询失败");
+        }
+    }
+
+    @Override
+    public Result addNote(Note note, Integer problemID) {
+        try {
+            problemMapper.addNote(note, problemID);
+            return ResultUtil.success();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResultUtil.error(500, "添加失败");
+        }
+    }
+
+    @Override
+    public Result findNotesByProblemID(Integer problemID) {
+        try {
+            return ResultUtil.success(problemMapper.findNotesByProblemID(problemID));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResultUtil.error(500, "查询失败");
+        }
+    }
+
+    @Override
+    public Result findNoteByNoteID(Integer noteID) {
+        try {
+            return ResultUtil.success(problemMapper.findNoteByNoteID(noteID));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResultUtil.error(500, "查询失败");
         }
     }
 }

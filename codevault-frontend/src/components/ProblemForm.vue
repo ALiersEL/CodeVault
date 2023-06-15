@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, computed, onMounted, onUpdated, nextTick, h, reactive } from "vue";
+import { ref, watch, computed, onMounted, onUpdated, nextTick, h, reactive, VNodeRef } from "vue";
 import {
   NForm,
   NFormItem,
@@ -16,7 +16,7 @@ import {
   AutoCompleteInst,
   NSelect,
   NTag,
-  FormInst,
+  FormRules
 } from "naive-ui";
 import { Add } from "@vicons/ionicons5";
 // 导入富文本编辑器quill
@@ -24,7 +24,7 @@ import { QuillEditor } from "@vueup/vue-quill";
 import "@vueup/vue-quill/dist/vue-quill.snow.css";
 import { postMapping } from "../api/request";
 
-const formRef = ref<FormInst | null>(null);
+const formRef = ref<VNodeRef | null>(null);
 
 type source = {
   company: {
@@ -82,7 +82,7 @@ const tagNames = computed(() => {
 });
 
 // rules
-const rules = {
+const rules: FormRules = {
   problemTitle: {
     required: true,
     message: "请输入题目标题",
@@ -247,11 +247,12 @@ const changePost = (index: number, value: string) => {
 
 const handleSubmit = (e: MouseEvent) => {
   e.preventDefault();
-  formRef.value?.validate((errors) => {
+  formRef.value?.validate((errors: string) => {
     if (!errors) {
       //message.success('验证成功')
     } else {
       console.log(errors);
+      return;
       //message.error('验证失败')
     }
   });
@@ -261,7 +262,7 @@ const handleSubmit = (e: MouseEvent) => {
   // const problem2 = problem;
   // problem2.problemContent = JSON.stringify(problem2.problemContent);
   // 将problem穿到后端
-  postMapping("/problems/add", problem)
+  postMapping("/problems", problem)
   .then((res) => {
     console.log(res);
     if (res.data.code === 200) {
@@ -303,7 +304,7 @@ const handleSubmit = (e: MouseEvent) => {
   <!-- dialog form, dialog appear from the top, a dialog with scrollable content -->
   <n-space vertical>
     <n-form
-      :ref="formRef"
+      ref="formRef"
       :model="problem"
       :rules="rules"
       label-placement="left"
@@ -429,12 +430,12 @@ const handleSubmit = (e: MouseEvent) => {
             @update:value="changePost(index, $event)"
           />
         </n-form-item>
-        <n-button style="margin-left: 12px" @click="removeSource(index)">
+        <n-button style="margin-left: 12px;top: -10px;" @click="removeSource(index)">
           删除
         </n-button>
       </n-form-item>
       <n-form-item>
-          <n-button attr-type="button" @click="addSource">
+          <n-button attr-type="button" style="left: 80px;" @click="addSource">
             增加来源
           </n-button>
       </n-form-item>

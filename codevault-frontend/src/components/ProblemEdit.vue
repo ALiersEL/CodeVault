@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, computed, onMounted, onUpdated, nextTick, h, defineEmits } from "vue";
+import { ref, watch, computed, onMounted, onUpdated, nextTick, h, reactive } from "vue";
 import {
   NForm,
   NFormItem,
@@ -18,12 +18,28 @@ import {
   NTag,
   FormInst,
 } from "naive-ui";
+import { Add } from "@vicons/ionicons5";
 // 导入富文本编辑器quill
 import { QuillEditor } from "@vueup/vue-quill";
 import "@vueup/vue-quill/dist/vue-quill.snow.css";
 import { postMapping } from "../api/request";
 
 const formRef = ref<FormInst | null>(null);
+
+type source = {
+  company: {
+    companyName: string | null,
+    companyID: string | null,
+  },
+  department: {
+    departmentName: string | null,
+    departmentID: string | null,
+  },
+  post: {
+    postName: string | null,
+    postID: string | null,
+  },
+}
 
 type problemType = {
   problemTitle: string | null;
@@ -32,23 +48,37 @@ type problemType = {
   difficulty: number | null;
   mastery: number,
   status: boolean,
-  tags: string[];
-  companyName: string | null;
-  departmentName: string | null;
-  postName: string | null;
+  tags: option[],
+  sources: source[];
 };
 
-const problem = ref<problemType>({
+const problem = reactive<problemType>({
   problemTitle: null,
   problemContent: null,
   problemType: null,
   difficulty: null,
   mastery: 0,
   status: false,
-  tags: [] as string[],
-  companyName: null,
-  departmentName: null,
-  postName: null,
+  tags: [] as option[],
+  sources: [{
+    company: {
+      companyName: null,
+      companyID: null,
+    },
+    department: {
+      departmentName: null,
+      departmentID: null,
+    },
+    post: {
+      postName: null,
+      postID: null,
+    },
+  }] as source[]
+});
+
+// 只要problem.tags中的tagName, 根据problem.tags动态改变
+const tagNames = computed(() => {
+  return problem.tags.map((tag) => tag.label);
 });
 
 // rules
@@ -80,63 +110,15 @@ const difficulties = [
   },
 ];
 
-// 所有tagOptions中元素的type都为”success“
-const tagOptionsRef = ref([
-  {
-    label: "动态规划",
-    value: "动态规划",
-  },
-  {
-    label: "贪心算法",
-    value: "贪心算法",
-  },
-  {
-    label: "回溯算法",
-    value: "回溯算法",
-  },
-]);
-
-const companyOptionsRef = ref([
-  {
-    label: "字节跳动",
-    value: "字节跳动",
-  },
-  {
-    label: "阿里巴巴",
-    value: "阿里巴巴",
-  },
-  {
-    label: "腾讯",
-    value: "腾讯",
-  },
-  {
-    label: "百度",
-    value: "百度",
-  },
-  {
-    label: "美团",
-    value: "美团",
-  },
-  {
-    label: "京东",
-    value: "京东",
-  },
-  {
-    label: "华为",
-    value: "华为",
-  },
-  {
-    label: "小米",
-    value: "小米",
-  },
-]);
-
 type option = {
   label: string;
   value: string;
 };
 
-// departmentOptions类型为option[]，用于存储当前用户的部门信息
+// 所有tagOptions中元素的type都为”success“
+// 所有tagOptions中元素的type都为”success“
+const tagOptionsRef = ref<option[]>([]);
+const companyOptionsRef = ref<option[]>([]);
 const departmentOptionsRef = ref<option[]>([]);
 const postOptionsRef = ref<option[]>([]);
 
@@ -147,11 +129,6 @@ onMounted(() => {
 
 onUpdated(() => {});
 
-// string类型的数组，用于存储新添加的tag
-const newTags = ref<string[] | null>(null);
-const newCompany = ref<string | null>(null);
-const newDepartment = ref<string | null>(null);
-const newPost = ref<string | null>(null);
 
 const autoCompleteInstRef = ref<AutoCompleteInst | null>(null);
 
@@ -168,27 +145,41 @@ const autoFillTagOptions = computed(() => {
   // 当前输入的选项在tagOptions存在时，只返回tagOptions中含有输入的内容的选项
   // 当前输入的选项在tagOptions不存在时，返回tagOptions中含有输入的内容的选项以及当前输入的选项, 当前输入的选项为prefix + " (自定义)"
   if (
-    tagOptionsRef.value.findIndex((option) => option.value === prefix) !== -1
+    tagOptionsRef.value.findIndex((option) => option.label === prefix) !== -1
   ) {
     return tagOptionsRef.value.filter((option) =>
-      option.value.includes(prefix)
+      option.label.includes(prefix)
     );
   } else {
     return [
-      ...tagOptionsRef.value.filter((option) => option.value.includes(prefix)),
+      ...tagOptionsRef.value.filter((option) => option.label.includes(prefix)),
       {
-        label: prefix + " (自定义)",
-        value: null,
+        label: prefix + " (新增)",
+        value: "-1",
       },
     ];
   }
 });
 
 const selectTag = (tag: string) => {
+  console.log(tag);
   // 如果problem.tags中已经有了这个tag，就不添加, 否则添加
-  if (problem.value.tags.indexOf(tag) === -1) {
-    problem.value.tags.push(tag);
+  const existingTagIndex: number = problem.tags.findIndex((item) => {
+    if (tag !== "-1") {
+      return item.value === tag;
+    } else {
+      return item.label === newTag.value;
+    }
+  });
+
+  if (existingTagIndex === -1) {
+    const nTag = {
+      label: newTag.value,
+      value: tag,
+    };
+    problem.tags.push(nTag);
   }
+  console.log(problem.tags);
 };
 
 // renderTag
@@ -199,7 +190,7 @@ const renderTag = (tag: string, index: number) => {
       type: "success",
       closable: true,
       onClose: () => {
-        problem.value.tags.splice(index, 1);
+        problem.tags.splice(index, 1);
       },
     },
     {
@@ -208,7 +199,53 @@ const renderTag = (tag: string, index: number) => {
   );
 };
 
-const handleSave = (e: MouseEvent) => {
+const removeSource = (index: number) => {
+  problem.sources.splice(index, 1);
+}
+
+const addSource = () => {
+  problem.sources.push({
+    company: {
+      companyName: null,
+      companyID: null,
+    },
+    department: {
+      departmentName: null,
+      departmentID: null,
+    },
+    post: {
+      postName: null,
+      postID: null,
+    },
+  });
+  console.log(problem.sources);
+}
+
+const changeCompany = (index: number, value: string) => {
+  console.log(value);
+  console.log(companyOptionsRef.value);
+  problem.sources[index].company.companyName = value;
+  // 找得到ycompanID就赋值，找不到就赋值为-1
+  const matchingOption = companyOptionsRef.value.find((option) => option.label === value);
+  problem.sources[index].company.companyID = matchingOption ? matchingOption.value : "-1";
+  console.log(problem.sources);
+}
+
+const changeDepartment = (index: number, value: string) => {
+  problem.sources[index].department.departmentName = value;
+  // 找得到ycompanID就赋值，找不到就赋值为-1
+  const matchingOption = departmentOptionsRef.value.find((option) => option.label === value);
+  problem.sources[index].department.departmentID = matchingOption ? matchingOption.value : "-1";
+}
+
+const changePost = (index: number, value: string) => {
+  problem.sources[index].post.postName = value;
+  // 找得到ycompanID就赋值，找不到就赋值为-1
+  const matchingOption = postOptionsRef.value.find((option) => option.label === value);
+  problem.sources[index].post.postID = matchingOption ? matchingOption.value : "-1";
+}
+
+const handleSubmit = (e: MouseEvent) => {
   e.preventDefault();
   formRef.value?.validate((errors) => {
     if (!errors) {
@@ -218,225 +255,211 @@ const handleSave = (e: MouseEvent) => {
       //message.error('验证失败')
     }
   });
-  // newTags为在problem.tags中存在，但是在tagOptions中不存在的tag
-  // 将这些tag赋值给newTags
-  newTags.value = problem.value.tags.filter((tag) => {
-    return (
-      tagOptionsRef.value.findIndex((option) => option.value === tag) === -1
-    );
-  });
+
+  console.log(problem);
   
-  console.log(newTags);
-
-  // 如果problem.companyName在companyOptions中不存在，就将其添加到newCompany中
-  if (
-    companyOptionsRef.value.findIndex(
-      (option) => option.value === problem.value.companyName
-    ) === -1
-  ) {
-    newCompany.value = problem.value.companyName;
-  }
-
-  // 如果problem.departmentName在departmentOptions中不存在，就将其添加到newDepartment中
-  if (
-    departmentOptionsRef.value.findIndex(
-      (option) => option.value === problem.value.departmentName
-    ) === -1
-  ) {
-    newDepartment.value = problem.value.departmentName;
-  }
-
-  // 如果problem.postName在postOptions中不存在，就将其添加到newPost中
-  if (
-    postOptionsRef.value.findIndex(
-      (option) => option.value === problem.value.postName
-    ) === -1
-  ) {
-    newPost.value = problem.value.postName;
-  }
-
-  console.log(problem.value);
-  
-  const problem2 = problem.value;
-  problem2.problemContent = JSON.stringify(problem2.problemContent);
-  // 将problem和newTags穿到后端
-  postMapping("/problems/edit", {problem: problem2, newTags: newTags.value, newCompany: newCompany.value, newDepartment: newDepartment.value, newPost: newPost.value})
+  // const problem2 = problem;
+  // problem2.problemContent = JSON.stringify(problem2.problemContent);
+  // 将problem穿到后端
+  postMapping("/problems/add", problem)
   .then((res) => {
     console.log(res);
     if (res.data.code === 200) {
-      alert("修改成功");
+      alert("添加成功");
       // 重置表单
       formRef.value?.restoreValidation();
       // 重置problem
-      problem.value = {
-        problemTitle: null,
-        problemContent: null,
-        problemType: null,
-        difficulty: null,
-        mastery: 0,
-        status: false,
-        tags: [] as string[],
-        companyName: null,
-        departmentName: null,
-        postName: null,
-      };
-      // 重置newTags
-      newTags.value = [];
+      problem.problemTitle = null;
+      problem.problemContent = null;
+      problem.problemType = null;
+      problem.difficulty = null;
+      problem.mastery = 0;
+      problem.status = false;
+      problem.tags = [];
+      problem.sources = [{
+        company: {
+          companyName: null,
+          companyID: null,
+        },
+        department: {
+          departmentName: null,
+          departmentID: null,
+        },
+        post: {
+          postName: null,
+          postID: null,
+        },
+      }];
       // 重置newTag
       newTag.value = "";
     } else {
-      alert("修改失败");
+      alert("添加失败");
     }
   });
 };
 
-
-
-const emit = defineEmits(["changeMode"]);
+const emit = defineEmits(["changeMode"]); // 定义emit, 用于向父组件传递事件
 const handleCancel = () => {
   emit("changeMode");
 };
 </script>
 
 <template>
-  <!-- dialog form, dialog appear from the top, a dialog with scrollable content -->
-  <n-space vertical>
-    <n-form
-      :ref="formRef"
-      :model="problem"
-      :rules="rules"
-      label-placement="left"
-      :label-width="160"
-      :style="{
-        maxWidth: '1000px',
-      }"
-    >
-      <n-form-item label="题目标题" path="problemTitle">
-        <n-input v-model:value="problem.problemTitle" />
-      </n-form-item>
+  <div>
+    <!-- dialog form, dialog appear from the top, a dialog with scrollable content -->
+    <n-space vertical>
+      <n-form
+        :ref="formRef"
+        :model="problem"
+        :rules="rules"
+        label-placement="left"
+        :label-width="160"
+      >
+        <n-form-item label="题目标题" path="problemTitle">
+          <n-input v-model:value="problem.problemTitle" style="width: 80%"/>
+        </n-form-item>
 
-      <n-form-item label="题目描述" path="problemContent">
-        <div>
-          <QuillEditor
-            v-model:content="problem.problemContent"
-            toolbar="full"
-            theme="snow"
-            contentType="html"
-          />
-        </div>
-      </n-form-item>
-
-      <n-form-item label="题目类型" path="problemType">
-        <n-radio-group v-model:value="problem.problemType" name="problemType">
-          <n-radio value="0"> 算法题 </n-radio>
-          <n-radio value="1"> 文字题 </n-radio>
-        </n-radio-group>
-      </n-form-item>
-
-      <n-form-item label="难度" path="difficulty">
-        <n-radio-group v-model:value="problem.difficulty" name="difficulty">
-          <n-radio-button
-            v-for="item in difficulties"
-            :key="item.value"
-            :value="item.value"
-            :label="item.label"
-          >
-          </n-radio-button>
-        </n-radio-group>
-      </n-form-item>
-
-      <n-form-item label="掌握程度" path="mastery">
-        <n-rate v-model:value="problem.mastery" name="mastery" />
-      </n-form-item>
-
-      <n-form-item label="完成情况" path="status">
-        <n-radio-group v-model:value="problem.status" name="status">
-          <n-radio value="0"> 未完成 </n-radio>
-          <n-radio value="1"> 已完成 </n-radio>
-        </n-radio-group>
-      </n-form-item>
-
-      <n-form-item label="类别" path="tags">
-        <n-dynamic-tags v-model:value="problem.tags" :render-tag="renderTag">
-          <template #input="{ deactivate }">
-            <n-auto-complete
-              ref="autoCompleteInstRef"
-              v-model:value="newTag"
-              size="small"
-              :options="autoFillTagOptions"
-              placeholder="类别"
-              :clear-after-select="true"
-                @select="selectTag(String($event))"
-              @blur="deactivate"
+        <n-form-item label="题目描述" path="problemContent">
+          <div>
+            <QuillEditor
+              v-model:content="problem.problemContent"
+              toolbar="full"
+              theme="snow"
+              contentType="html"
             />
-          </template>
-          <template #trigger="{ activate, disabled }">
-            <n-button
-              size="small"
-              type="primary"
-              dashed
-              :disabled="disabled"
-              @click="activate()"
+          </div>
+        </n-form-item>
+
+        <n-form-item label="题目类型" path="problemType">
+          <n-radio-group v-model:value="problem.problemType" name="problemType">
+            <n-radio value="0"> 算法题 </n-radio>
+            <n-radio value="1"> 文字题 </n-radio>
+          </n-radio-group>
+        </n-form-item>
+
+        <n-form-item label="难度" path="difficulty">
+          <n-radio-group v-model:value="problem.difficulty" name="difficulty">
+            <n-radio-button
+              v-for="item in difficulties"
+              :key="item.value"
+              :value="item.value"
+              :label="item.label"
             >
-              <template #icon>
-                <n-icon>
-                  <Add />
-                </n-icon>
-              </template>
-              添加
+            </n-radio-button>
+          </n-radio-group>
+        </n-form-item>
+
+        <n-form-item label="掌握程度" path="mastery">
+          <n-rate v-model:value="problem.mastery" name="mastery" />
+        </n-form-item>
+
+        <n-form-item label="完成情况" path="status">
+          <n-radio-group v-model:value="problem.status" name="status">
+            <n-radio value="0"> 未完成 </n-radio>
+            <n-radio value="1"> 已完成 </n-radio>
+          </n-radio-group>
+        </n-form-item>
+
+        <n-form-item label="类别" path="tags">
+          <n-dynamic-tags v-model:value="tagNames" :render-tag="renderTag">
+            <template #input="{ deactivate }">
+              <n-auto-complete
+                ref="autoCompleteInstRef"
+                v-model:value="newTag"
+                size="small"
+                :options="autoFillTagOptions"
+                placeholder="类别"
+                :clear-after-select="true"
+                @select="selectTag(String($event))"
+                @blur="deactivate"
+              />
+            </template>
+            <template #trigger="{ activate, disabled }">
+              <n-button
+                size="small"
+                type="primary"
+                dashed
+                :disabled="disabled"
+                @click="activate()"
+              >
+                <template #icon>
+                  <n-icon>
+                    <Add />
+                  </n-icon>
+                </template>
+                添加
+              </n-button>
+            </template>
+          </n-dynamic-tags>
+        </n-form-item>
+
+        <n-form-item  
+          v-for="(item, index) in problem.sources" 
+          :key="index"
+          :label="`题目来源${index + 1}`" >
+          <n-form-item>
+            <span style="width: 42px; margin-left: 35px">公司</span>
+            <n-select
+              v-model:value="item.company.companyName"
+              filterable
+              tag
+              placeholder="Select"
+              :options="companyOptionsRef"
+              @update:value="changeCompany(index, $event)"
+            />
+          </n-form-item>
+          <n-form-item>
+            <span class="source-label">部门</span>
+            <n-select
+              v-model:value="item.department.departmentName"
+              filterable
+              tag
+              placeholder="Select"
+              :options="departmentOptionsRef"
+              :disabled="!item.company.companyName"
+              @update:value="changeDepartment(index, $event)"
+            />
+          </n-form-item>
+          <n-form-item>
+            <span class="source-label">岗位</span>
+            <n-select
+              v-model:value="item.post.postName"
+              filterable
+              tag
+              placeholder="Select"
+              :options="postOptionsRef"
+              :disabled="!item.department.departmentName"
+              @update:value="changePost(index, $event)"
+            />
+          </n-form-item>
+          <n-button style="margin-left: 12px;top: -10px;" @click="removeSource(index)">
+            删除
+          </n-button>
+        </n-form-item>
+        <n-form-item>
+            <n-button attr-type="button" style="left: 80px;" @click="addSource">
+              增加来源
             </n-button>
-          </template>
-        </n-dynamic-tags>
-      </n-form-item>
+        </n-form-item>
 
-      <n-form-item label="题目来源">
-        <n-form-item>
-          <span style="width: 42px; margin-left: 2px">公司</span>
-          <n-select
-            v-model:value="problem.companyName"
-            filterable
-            tag
-            placeholder="Select"
-            :options="companyOptionsRef"
-          />
-        </n-form-item>
-        <n-form-item>
-          <span class="source-label">部门</span>
-          <n-select
-            v-model:value="problem.departmentName"
-            filterable
-            tag
-            placeholder="Select"
-            :options="departmentOptionsRef"
-            :disabled="!problem.companyName"
-          />
-        </n-form-item>
-        <n-form-item>
-          <span class="source-label">岗位</span>
-          <n-select
-            v-model:value="problem.postName"
-            filterable
-            tag
-            placeholder="Select"
-            :options="postOptionsRef"
-            :disabled="!problem.departmentName"
-          />
-        </n-form-item>
-      </n-form-item>
-
-      <div style="display: flex; justify-content: flex-end">
-        <n-button round attr-type="button" @click="handleCancel">
-          取消
-        </n-button>
-        <n-button round attr-type="submit" @click="handleSave">
-          保存
-        </n-button>
-      </div>
-    </n-form>
-  </n-space>
+        <div style="display: flex; justify-content: flex-end;">
+          <n-button round attr-type="button" @click="handleCancel">
+            取消
+          </n-button>
+          <n-button round attr-type="submit" @click="handleSubmit">
+            提交
+          </n-button>
+        </div>
+      </n-form>
+    </n-space>
+  </div>
 </template>
 
 <style scoped>
+.n-space {
+  padding-right:  80px;
+  padding-left: -70px;
+}
 .source-label {
   width: 50px;
   margin-left: 10px;

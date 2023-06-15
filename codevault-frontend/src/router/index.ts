@@ -39,6 +39,17 @@ const routes: Array<RouteRecordRaw> = [
     path: "/register",
     component: () => import("../views/Register.vue"),
     meta: { requiresAuth: false },
+  },
+  {
+    path: "/problem",
+    component: () => import("../views/ProblemDetails.vue"),
+    meta: { requiresAuth: true },
+  },
+  {
+    path: "/folder/:path*",
+    name: "folder",
+    component: () => import("../views/ProblemArchive.vue"),
+    meta: { requiresAuth: true },
   }
 ]
 

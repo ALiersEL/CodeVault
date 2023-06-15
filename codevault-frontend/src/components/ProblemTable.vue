@@ -4,7 +4,7 @@ import { NSpace, NDataTable, NTag, NButton } from "naive-ui";
 import type { DataTableColumns } from "naive-ui";
 import { onMounted } from "vue";
 import router from "../router";
-import { getMapping } from "../api/request";
+import { getMapping, deleteMapping } from "../api/request";
 
 type RowData = {
   key: number
@@ -16,11 +16,10 @@ type RowData = {
 }
 
 const createColumns = ({
-  sendMail
+  deleteProblem
 }: {
-  sendMail: (rowData: RowData) => void
-}): DataTableColumns<RowData> => {
-  return [
+  deleteProblem: (rowData: RowData) => void
+}): DataTableColumns<RowData> => [
     {
       title: "状态",
       key: "status"
@@ -31,15 +30,23 @@ const createColumns = ({
       // problemTitle在hover变蓝色，点击后跳转到题目详情页
       render (row) {
         return h(
-          'div',
+          "a",
           {
-            style: 'cursor: pointer;',
+            // hover
+            style: 'cursor: pointer;color: #096dd9;',
             // hover
             onClick: () => {
-              router.push(`/problem/${row.problemID}`)
-            }
+              router.push(
+                {
+                  path: 'problem',
+                  query: {
+                    problemID: row.key.toString()
+                  }
+                }
+              )
+            },
           },
-          {
+          { 
             default: () => row.problemTitle
           }
         )
@@ -83,14 +90,13 @@ const createColumns = ({
           NButton,
           {
             size: 'small',
-            onClick: () => sendMail(row)
+            onClick: () => deleteProblem(row)
           },
-          { default: () => 'Send Email' }
+          { default: () => '删除' }
         )
       }
     }
-  ]
-}
+]
 
 const createData = (): RowData[] => [
   {
@@ -121,8 +127,12 @@ const createData = (): RowData[] => [
 
 const data = createData();
 const columns = createColumns({
-    sendMail (rowData) {
-        alert(`Send email to ${rowData.problemTitle}`);
+    deleteProblem (rowData) {
+        alert(`Deleting ${rowData.problemTitle}`);
+        const problemID = rowData.key;
+        deleteMapping((`problems/${problemID}`), {}).then((res) => {
+            console.log(res);
+        });
     }
 });
 const pagination = {
@@ -132,18 +142,11 @@ const pagination = {
 onMounted(() => {
     console.log('mounted');
     // 从后端获取数据
-    // getMapping("/problem/getAll").then((res) => {
-    //     console.log(res);
-    // });
+    getMapping("/users/problemset", {}).then((res) => {
+        console.log(res);
+    });
 });
 
-// rowClassName
-const rowClassName = (row: RowData) => {
-    if (row.selected = true) {
-        return "hover";
-    }
-    return "";
-};
 </script>
 
 <template>
@@ -154,7 +157,6 @@ const rowClassName = (row: RowData) => {
             :columns="columns"
             :data="data"
             :pagination="pagination"
-            :row-class-name="rowClassName"
             />
         </n-space>
     </div>

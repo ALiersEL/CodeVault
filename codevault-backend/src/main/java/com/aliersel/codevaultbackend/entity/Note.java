@@ -5,12 +5,15 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
+import java.time.OffsetDateTime;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
-public class Department {
-    private Integer departmentID;
-    private String departmentName;
-    private Integer companyID;
+public class Note {
+    private Integer noteID;
+    private String noteText;
+    private OffsetDateTime lastModified;
+    private Integer problemID;
 }

@@ -157,7 +157,7 @@ const register = () => {
   height: 5%;
   margin-bottom: 20px;
   border-radius: 5px;
-  font-size: 1rem;
+  font-size: 15px;
 }
 
 .box input {
@@ -168,7 +168,7 @@ const register = () => {
   height: 100%;
   border: none;
   outline: none;
-  font-size: 1rem;
+  font-size: 15px;
   border-radius: 10px;
 }
 
@@ -191,7 +191,7 @@ const register = () => {
 
 .log-in {
   margin-top: 5%;
-  font-size: 1rem;
+  font-size: 15px;
 }
 
 button {
@@ -201,7 +201,7 @@ button {
   height: 5%;
   border: none;
   border-radius: 5px;
-  font-size: 1rem;
+  font-size: 15px;
   cursor: pointer;
   background-color: #71e69e;
   transition: background-color 0.3s ease;
@@ -227,6 +227,6 @@ a {
 }
 
 h2 {
-  font-size: 2.2rem;
+  font-size: 33px;
 }
 </style>
