@@ -1,11 +1,14 @@
 package com.aliersel.codevaultbackend.service.impl;
 
+import com.aliersel.codevaultbackend.controller.entity.CategoryWithCounts;
+import com.aliersel.codevaultbackend.controller.entity.ProblemWithTags;
 import com.aliersel.codevaultbackend.entity.*;
 import com.aliersel.codevaultbackend.mapper.UserMapper;
 import com.aliersel.codevaultbackend.security.JwtTokenProvider;
 import com.aliersel.codevaultbackend.service.intf.UserService;
 import com.aliersel.codevaultbackend.utils.Result;
 import com.aliersel.codevaultbackend.utils.ResultUtil;
+import com.github.pagehelper.Page;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -32,7 +35,7 @@ public class UserServiceImpl implements UserService {
             String hash = user.getPasswordHash();
             // 使用Bcrypt加密
             user.setPasswordHash(passwordEncoder.encode(hash));
-            userMapper.addUser(user);
+            userMapper.saveUser(user);
             return ResultUtil.success();
         } catch (Exception e) {
             e.printStackTrace();
@@ -75,7 +78,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public Result<Integer> addCompany(Company company) {
         try {
-            userMapper.addCompany(company);
+            userMapper.saveCompany(company);
             return ResultUtil.success(company.getCompanyID());
         } catch (Exception e) {
             e.printStackTrace();
@@ -86,7 +89,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public Result<Integer> addDepartment(Department department) {
         try {
-            userMapper.addDepartment(department);
+            userMapper.saveDepartment(department);
             return ResultUtil.success(department.getDepartmentID());
         } catch (Exception e) {
             e.printStackTrace();
@@ -97,7 +100,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public Result<Integer> addPost(Post post) {
         try {
-            userMapper.addPost(post);
+            userMapper.savePost(post);
             return ResultUtil.success(post.getPostID());
         } catch (Exception e) {
             e.printStackTrace();
@@ -108,7 +111,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public Result<Integer> addCategory(Category category) {
         try {
-            userMapper.addCategory(category);
+            userMapper.saveCategory(category);
             return ResultUtil.success(category.getCategoryID());
         } catch (Exception e) {
             e.printStackTrace();
@@ -137,15 +140,59 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Result getProblemsByUserID(Integer userID) {
+    public Result<Page<ProblemWithTags>> getProblemsByUserID(Integer userID) {
         try {
-            List<Integer> list = userMapper.findProblemIDsByUserID(userID);
-            // To be continued
-
-            return ResultUtil.success();
+            System.out.println(userMapper.findProblemsByUserID(userID));
+            return ResultUtil.success(userMapper.findProblemsByUserID(userID));
         } catch (Exception e) {
             e.printStackTrace();
             return ResultUtil.error(400, "Get problems failed");
+        }
+    }
+
+    @Override
+    public Result<List<CategoryWithCounts>> getCategoriesByUserID(Integer userID) {
+        try {
+            return ResultUtil.success(userMapper.findCategoriesByUserID(userID));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResultUtil.error(400, "Get categories failed");
+        }
+    }
+
+    @Override
+    public Result<Integer> addCategory(Integer userID, String categoryName) {
+        try {
+            Category category = new Category();
+            category.setUserID(userID);
+            category.setCategoryName(categoryName);
+            userMapper.saveCategory(category);
+            return ResultUtil.success(category.getCategoryID());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResultUtil.error(400, "Add category failed");
+        }
+    }
+
+    @Override
+    public Result updateCategory(Integer categoryID, String categoryName) {
+        try {
+            userMapper.updateCategory(categoryID, categoryName);
+            return ResultUtil.success();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResultUtil.error(400, "Update category failed");
+        }
+    }
+
+    @Override
+    public Result deleteCategory(Integer categoryID) {
+        try {
+            userMapper.deleteCategory(categoryID);
+            return ResultUtil.success();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResultUtil.error(400, "Delete category failed");
         }
     }
 }

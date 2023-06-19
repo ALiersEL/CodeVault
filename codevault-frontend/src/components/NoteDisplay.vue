@@ -6,9 +6,8 @@ const note = ref(null);
 
 onMounted(() => {
     const params = new URLSearchParams(window.location.search)
-    const problemID = params.get('problemID');
     const noteID = params.get('noteID');
-    getMapping(`problem/${problemID}/notes/${noteID}`,{}).then((res) => {
+    getMapping(`problem/notes/${noteID}`,{}).then((res) => {
         console.log(res);
     });
 });

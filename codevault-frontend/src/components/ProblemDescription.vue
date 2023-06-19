@@ -8,10 +8,41 @@ import {
   NTag,
 } from "naive-ui";
 
-
 const cols = ref(1);
 
-const problem = ref({
+type option = {
+  label: string;
+  value: number;
+};
+
+type source = {
+  company: {
+    companyName: string | null,
+    companyID: string | null,
+  },
+  department: {
+    departmentName: string | null,
+    departmentID: string | null,
+  },
+  post: {
+    postName: string | null,
+    postID: string | null,
+  },
+}
+
+type problemType = {
+  problemID: number | null;
+  problemTitle: string | null;
+  problemContent: string | null;
+  problemType: number | null;
+  difficulty: number | null;
+  mastery: number,
+  status: boolean,
+  tags: option[],
+  sources: source[];
+};
+
+const problem = ref<problemType>({
   problemID: null,
   problemTitle: null,
   problemContent: null,
@@ -19,19 +50,34 @@ const problem = ref({
   difficulty: null,
   mastery: 0,
   status: false,
-  tags: [] as string[],
-  companyName: null,
-  departmentName: null,
-  postName: null,
+  tags: [] as option[],
+  sources: [{
+    company: {
+      companyName: null,
+      companyID: null,
+    },
+    department: {
+      departmentName: null,
+      departmentID: null,
+    },
+    post: {
+      postName: null,
+      postID: null,
+    },
+  }] as source[]
+});
+
+const props = defineProps({
+  problem: {
+    type: Object,
+    required: true
+  }
 });
 
 onMounted(() => {
-  // 从后端获取数problem的所有信息，在url中指定problemId
-  // getMapping("`/problem/${problemId}`",{}).then((res) => {
-  //     problem.value = res.data;
-  // });
+  // 从父组件获取problem
+  problem.value = (props.problem as problemType);
 });
-
 
 </script>
 
@@ -42,10 +88,20 @@ onMounted(() => {
           {{ problem.problemTitle }}
         </n-descriptions-item>
         <n-descriptions-item label="题目类型">
-          {{ problem.problemType }}
+          <n-tag
+            :bordered="false"
+            type="info"
+            >
+            {{ problem.problemType ? "文字题" : "算法题" }}
+          </n-tag>
         </n-descriptions-item>
         <n-descriptions-item label="难度">
-          {{ problem.difficulty }}
+          <n-tag
+            :bordered="false"
+            :type="problem.difficulty === 0 ? 'success' : problem.difficulty === 1 ? 'warning' : 'error'"
+            >
+            {{ problem.difficulty === 0 ? "简单" : problem.difficulty === 1 ? "中等" : "困难" }}
+          </n-tag>
         </n-descriptions-item>
         <n-descriptions-item label="题目内容">
           <div v-html="problem.problemContent"></div>
@@ -64,24 +120,30 @@ onMounted(() => {
         </n-space>
         </n-descriptions-item>
         <n-descriptions-item label="标签">
-          <n-space>
-            <n-descriptions-item v-for="tag in problem.tags" :key="tag">
-              <n-tag :bordered="false" type="success"> {{ tag }} </n-tag>
-            </n-descriptions-item>
-          </n-space>
+          <div v-for="tag in problem.tags">
+              <!-- 如果有标签，则显示标签 -->
+              <n-tag v-if="tag.label" :bordered="false" type="success"> {{ tag.label }} </n-tag>
+              <!-- 否则显示无标签 -->
+              {{ !tag.label ? "无标签" : ""  }}
+          </div>
         </n-descriptions-item>
         <n-descriptions-item label="相关企业">
-          <n-tag :bordered="false" type="success"> {{ problem.companyName }} </n-tag>
-          <n-tag :bordered="false" type="success"> {{ problem.departmentName }} </n-tag>
-          <n-tag :bordered="false" type="success"> {{ problem.postName }} </n-tag>
+          <n-space>
+            <div v-for="source in problem.sources">
+              <!-- 如果有企业，则显示企业 -->
+              <n-tag v-if="source.company.companyName" :bordered="false" type="success"> {{ source.company.companyName }} </n-tag>
+              <!-- 如果有部门，则显示部门 -->
+              <n-tag v-if="source.department.departmentName" :bordered="false" type="success"> {{ source.department.departmentName }} </n-tag>
+              <!-- 如果有岗位，则显示岗位 -->
+              <n-tag v-if="source.post.postName" :bordered="false" type="success"> {{ source.post.postName }} </n-tag>
+            </div>
+            <!-- 没有来源，显示暂无来源 -->
+            {{ !problem.sources[0].company.companyName ? "暂无来源" : ""  }}  
+          </n-space>
         </n-descriptions-item>
     </n-descriptions>
   </div>
 </template>
 
 <style scoped>
-.container {
-  margin: 20px;
-  width: 40%;
-}
 </style>

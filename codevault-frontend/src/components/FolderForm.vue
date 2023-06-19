@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { NForm, NFormItem, NInput, NButton, NSpace, FormRules } from "naive-ui";
-import { reactive, ref, defineEmits, VNodeRef } from "vue";
+import { reactive, ref, defineEmits, VNodeRef, inject } from "vue";
+import { postMapping } from "../api/request";
+import router from "../router";
 
 // 初始化，不为空
 const formRef = ref<VNodeRef | null>(null);
@@ -12,7 +14,7 @@ type Folder = {
 
 const folder = reactive<Folder>({
     name: "",
-    parentFolderID: 0,
+    parentFolderID: 1,
 });
 
 const rules: FormRules = {
@@ -27,6 +29,9 @@ const handleCancel = () => {
     emit("cancel");
 };
 
+const folderNames = inject("folderNames") as () => string[];
+const getFolderContent = inject("getFolderContent") as () => void;
+
 const handleSubmit = (e: MouseEvent) => {
     e.preventDefault();
     console.log(formRef.value)
@@ -36,6 +41,29 @@ const handleSubmit = (e: MouseEvent) => {
         if (!errors) {
             console.log(folder);
             emit("cancel");
+        }
+        else {
+            console.log("error");
+        }
+    });
+
+    console.log("提交");
+    // 如果folder.name重复，提示错误
+    const list = folderNames();
+    if (list.includes(folder.name)) {
+        console.log("文件夹名称重复");
+        alert("文件夹名称重复");
+        return;
+    }
+
+
+    const folderPath = router.currentRoute.value.query.path;
+    // console.log("提交" + folderPath);
+    postMapping("/folder", { parentPath: folderPath, folderName: folder.name }).then((res) => {
+        if (res.status === 200) {
+            console.log("success");
+            // inject getFolderContent function from parent
+            getFolderContent();
         }
         else {
             console.log("error");

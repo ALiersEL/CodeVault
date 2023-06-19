@@ -112,6 +112,7 @@ const register = () => {
   width: 100%;
   background: url("../assets/login-background.png") no-repeat;
   background-size: 100% 100%;
+  color-scheme: light dark;
 }
 .center {
   position: relative;

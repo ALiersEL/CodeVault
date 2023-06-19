@@ -17,11 +17,12 @@ CREATE TABLE "user" (
 );
 ```
 
-folder(<u>folder_id</u>, folder_name, parent_folder_id, date_added, last_modified, user_id)
+folder(<u>folder_id</u>, folder_name, folder_path, parent_folder_id, date_added, last_modified, user_id)
 ```PgSQL
 CREATE TABLE folder (
     folder_id SERIAL PRIMARY KEY,
     folder_name VARCHAR(50) NOT NULL,
+    folder_path TEXT NOT NULL,
     parent_folder_id INTEGER DEFAULT NULL,
     date_added TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     last_modified TIMESTAMPTZ NOT NULL DEFAULT NOW(),

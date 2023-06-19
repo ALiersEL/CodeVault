@@ -5,18 +5,22 @@ import FilterPanel from "../components/FilterPanel.vue";
 import SearchBox from "../components/SearchBox.vue";
 import ProblemModal from "../components/ProblemModal.vue";
 import ProblemTable from "../components/ProblemTable.vue";
+import TagPool from "../components/TagPool.vue";
 </script>
 
 <template>
     <div>
         <NavigationPanel />
-        <n-space vertical>
+        <n-space vertical style="margin-left: 50px;margin-right: 50px;margin-top: 20px;">
             <n-space>
                 <FilterPanel />
                 <SearchBox />
             </n-space>
             <ProblemModal />
-            <ProblemTable />
+            <n-space justify="space-between">
+                <ProblemTable />
+                <TagPool />
+            </n-space>
         </n-space>
     </div>
 </template>

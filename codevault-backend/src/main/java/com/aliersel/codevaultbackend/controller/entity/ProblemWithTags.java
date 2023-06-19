@@ -1,4 +1,4 @@
-package com.aliersel.codevaultbackend.entity;
+package com.aliersel.codevaultbackend.controller.entity;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -6,21 +6,18 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 import java.time.OffsetDateTime;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
-public class Problem {
+public class ProblemWithTags {
     private Integer problemID;
     private String problemTitle;
-    private String problemContent;
     private Integer problemType;
     private Integer difficulty;
     private Boolean status;
-    private Integer mastery;
-    private OffsetDateTime dateAdded;
     private OffsetDateTime lastModified;
-    private Integer userID;
-    private Integer folderID;
+    private String[] tags;
 }

@@ -7,6 +7,7 @@ import { ref } from 'vue'
 
 // ref 
 const showList = ref(false)
+const showType = ref(false)
 const showDifficulty = ref(false)
 const showStatus = ref(false)
 
@@ -19,6 +20,16 @@ type Option = {
 
 // 定义options
 const listOptions: Option[] = [];
+const typeOptions = [
+  {
+    label: "算法题",
+    value: "0",
+  },
+  {
+    label: "文字题",
+    value: "1",
+  },
+];
 const difficultyOptions = [
   {
     label: "简单",
@@ -57,13 +68,33 @@ const selectedTags: string[] = [];
                 filterable
                 placeholder="选择题单"
                 :options="listOptions"
+                clearable
             >
                 <template v-if="showList" #arrow>
                     <md-search />
                 </template>
             </n-select>
 
-            <n-select v-model:show="showDifficulty" placeholder="难度" :options="difficultyOptions">
+            <n-select 
+              v-model:show="showType" 
+              placeholder="类型" 
+              :options="typeOptions"
+              clearable
+            >
+                <template #arrow>
+                    <transition name="slide-left">
+                        <flash-checkmark16-regular v-if="showType" />
+                        <flash16-regular v-else />
+                    </transition>
+                </template>
+            </n-select>
+
+            <n-select 
+              v-model:show="showDifficulty" 
+              placeholder="难度" 
+              :options="difficultyOptions"
+              clearable
+            >
                 <template #arrow>
                     <transition name="slide-left">
                         <flash-checkmark16-regular v-if="showDifficulty" />
@@ -72,7 +103,12 @@ const selectedTags: string[] = [];
                 </template>
             </n-select>
 
-            <n-select v-model:show="showStatus" placeholder="状态" :options="statusOptions">
+            <n-select 
+              v-model:show="showStatus" 
+              placeholder="状态" 
+              :options="statusOptions"
+              clearable
+            >
                 <template #arrow>
                     <transition name="slide-left">
                         <flash-checkmark16-regular v-if="showStatus" />
@@ -87,6 +123,7 @@ const selectedTags: string[] = [];
                 filterable
                 placeholder="选择标签"
                 :options="tagOptions"
+                clearable
             />
         </n-space>
     </div>

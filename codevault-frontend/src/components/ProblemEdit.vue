@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, computed, onMounted, onUpdated, nextTick, h, reactive } from "vue";
+import { ref, watch, computed, onMounted, onUpdated, nextTick, h } from "vue";
 import {
   NForm,
   NFormItem,
@@ -22,7 +22,8 @@ import { Add } from "@vicons/ionicons5";
 // 导入富文本编辑器quill
 import { QuillEditor } from "@vueup/vue-quill";
 import "@vueup/vue-quill/dist/vue-quill.snow.css";
-import { postMapping } from "../api/request";
+import { putMapping } from "../api/request";
+import router from "../router";
 
 const formRef = ref<FormInst | null>(null);
 
@@ -52,33 +53,20 @@ type problemType = {
   sources: source[];
 };
 
-const problem = reactive<problemType>({
-  problemTitle: null,
-  problemContent: null,
-  problemType: null,
-  difficulty: null,
-  mastery: 0,
-  status: false,
-  tags: [] as option[],
-  sources: [{
-    company: {
-      companyName: null,
-      companyID: null,
-    },
-    department: {
-      departmentName: null,
-      departmentID: null,
-    },
-    post: {
-      postName: null,
-      postID: null,
-    },
-  }] as source[]
+// 从父组件获取problem
+const props = defineProps({
+  problem: {
+    type: Object,
+    required: true,
+  },
 });
+
+// 将props.problem复制一份给problem, 改变problem的值不会改变父组件的值
+const problem = ref<problemType>({...props.problem as problemType});
 
 // 只要problem.tags中的tagName, 根据problem.tags动态改变
 const tagNames = computed(() => {
-  return problem.tags.map((tag) => tag.label);
+  return problem.value.tags.map((tag) => tag.label);
 });
 
 // rules
@@ -125,6 +113,7 @@ const postOptionsRef = ref<option[]>([]);
 // onMounted, 从后端获取当前用户的tagOptions, companyOptions
 onMounted(() => {
   console.log(departmentOptionsRef.value);
+  console.log(problem.value);
 });
 
 onUpdated(() => {});
@@ -164,7 +153,7 @@ const autoFillTagOptions = computed(() => {
 const selectTag = (tag: string) => {
   console.log(tag);
   // 如果problem.tags中已经有了这个tag，就不添加, 否则添加
-  const existingTagIndex: number = problem.tags.findIndex((item) => {
+  const existingTagIndex: number = problem.value.tags.findIndex((item) => {
     if (tag !== "-1") {
       return item.value === tag;
     } else {
@@ -177,9 +166,9 @@ const selectTag = (tag: string) => {
       label: newTag.value,
       value: tag,
     };
-    problem.tags.push(nTag);
+    problem.value.tags.push(nTag);
   }
-  console.log(problem.tags);
+  console.log(problem.value.tags);
 };
 
 // renderTag
@@ -190,7 +179,7 @@ const renderTag = (tag: string, index: number) => {
       type: "success",
       closable: true,
       onClose: () => {
-        problem.tags.splice(index, 1);
+        problem.value.tags.splice(index, 1);
       },
     },
     {
@@ -200,11 +189,11 @@ const renderTag = (tag: string, index: number) => {
 };
 
 const removeSource = (index: number) => {
-  problem.sources.splice(index, 1);
+  problem.value.sources.splice(index, 1);
 }
 
 const addSource = () => {
-  problem.sources.push({
+  problem.value.sources.push({
     company: {
       companyName: null,
       companyID: null,
@@ -218,31 +207,31 @@ const addSource = () => {
       postID: null,
     },
   });
-  console.log(problem.sources);
+  console.log(problem.value.sources);
 }
 
 const changeCompany = (index: number, value: string) => {
   console.log(value);
   console.log(companyOptionsRef.value);
-  problem.sources[index].company.companyName = value;
-  // 找得到ycompanID就赋值，找不到就赋值为-1
+  problem.value.sources[index].company.companyName = value;
+  // 找得到companyID就赋值，找不到就赋值为-1
   const matchingOption = companyOptionsRef.value.find((option) => option.label === value);
-  problem.sources[index].company.companyID = matchingOption ? matchingOption.value : "-1";
-  console.log(problem.sources);
+  problem.value.sources[index].company.companyID = matchingOption ? matchingOption.value : "-1";
+  console.log(problem.value.sources);
 }
 
 const changeDepartment = (index: number, value: string) => {
-  problem.sources[index].department.departmentName = value;
-  // 找得到ycompanID就赋值，找不到就赋值为-1
+  problem.value.sources[index].department.departmentName = value;
+  // 找得到departmentID就赋值，找不到就赋值为-1
   const matchingOption = departmentOptionsRef.value.find((option) => option.label === value);
-  problem.sources[index].department.departmentID = matchingOption ? matchingOption.value : "-1";
+  problem.value.sources[index].department.departmentID = matchingOption ? matchingOption.value : "-1";
 }
 
 const changePost = (index: number, value: string) => {
-  problem.sources[index].post.postName = value;
-  // 找得到ycompanID就赋值，找不到就赋值为-1
+  problem.value.sources[index].post.postName = value;
+  // 找得到postID就赋值，找不到就赋值为-1
   const matchingOption = postOptionsRef.value.find((option) => option.label === value);
-  problem.sources[index].post.postID = matchingOption ? matchingOption.value : "-1";
+  problem.value.sources[index].post.postID = matchingOption ? matchingOption.value : "-1";
 }
 
 const handleSubmit = (e: MouseEvent) => {
@@ -256,44 +245,55 @@ const handleSubmit = (e: MouseEvent) => {
     }
   });
 
+  if (problem.value.problemTitle === null) {
+    alert("请输入题目标题");
+    return;
+  }
+  if (problem.value.problemContent === null) {
+    alert("请输入题目内容");
+    return;
+  }
   console.log(problem);
-  
-  // const problem2 = problem;
-  // problem2.problemContent = JSON.stringify(problem2.problemContent);
+
+  const problemID = router.currentRoute.value.query.problemID;
   // 将problem穿到后端
-  postMapping("/problems/add", problem)
+  putMapping(`/problems/${problemID}`, problem.value)
   .then((res) => {
     console.log(res);
     if (res.data.code === 200) {
-      alert("添加成功");
+      alert("修改成功");
+      handleCancel();
+      
       // 重置表单
       formRef.value?.restoreValidation();
       // 重置problem
-      problem.problemTitle = null;
-      problem.problemContent = null;
-      problem.problemType = null;
-      problem.difficulty = null;
-      problem.mastery = 0;
-      problem.status = false;
-      problem.tags = [];
-      problem.sources = [{
-        company: {
-          companyName: null,
-          companyID: null,
-        },
-        department: {
-          departmentName: null,
-          departmentID: null,
-        },
-        post: {
-          postName: null,
-          postID: null,
-        },
-      }];
+      problem.value = {
+        problemTitle: null,
+        problemContent: null,
+        problemType: null,
+        difficulty: null,
+        mastery: 0,
+        status: false,
+        tags: [] as option[],
+        sources: [{
+          company: {
+            companyName: null,
+            companyID: null,
+          },
+          department: {
+            departmentName: null,
+            departmentID: null,
+          },
+          post: {
+            postName: null,
+            postID: null,
+          },
+        }] as source[],
+      };
       // 重置newTag
       newTag.value = "";
     } else {
-      alert("添加失败");
+      alert("修改失败");
     }
   });
 };
@@ -332,8 +332,8 @@ const handleCancel = () => {
 
         <n-form-item label="题目类型" path="problemType">
           <n-radio-group v-model:value="problem.problemType" name="problemType">
-            <n-radio value="0"> 算法题 </n-radio>
-            <n-radio value="1"> 文字题 </n-radio>
+            <n-radio :value="0"> 算法题 </n-radio>
+            <n-radio :value="1"> 文字题 </n-radio>
           </n-radio-group>
         </n-form-item>
 
@@ -355,8 +355,8 @@ const handleCancel = () => {
 
         <n-form-item label="完成情况" path="status">
           <n-radio-group v-model:value="problem.status" name="status">
-            <n-radio value="0"> 未完成 </n-radio>
-            <n-radio value="1"> 已完成 </n-radio>
+            <n-radio :value="false"> 未完成 </n-radio>
+            <n-radio :value="true"> 已完成 </n-radio>
           </n-radio-group>
         </n-form-item>
 
@@ -398,7 +398,7 @@ const handleCancel = () => {
           :key="index"
           :label="`题目来源${index + 1}`" >
           <n-form-item>
-            <span style="width: 42px; margin-left: 35px">公司</span>
+            <span style="width: 42px; margin-left: 15px; margin-right: 10px;">公司</span>
             <n-select
               v-model:value="item.company.companyName"
               filterable
@@ -447,7 +447,7 @@ const handleCancel = () => {
             取消
           </n-button>
           <n-button round attr-type="submit" @click="handleSubmit">
-            提交
+            修改
           </n-button>
         </div>
       </n-form>

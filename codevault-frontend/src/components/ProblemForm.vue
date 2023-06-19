@@ -233,14 +233,14 @@ const changeCompany = (index: number, value: string) => {
 
 const changeDepartment = (index: number, value: string) => {
   problem.sources[index].department.departmentName = value;
-  // 找得到ycompanID就赋值，找不到就赋值为-1
+  // 找得到companyID就赋值，找不到就赋值为-1
   const matchingOption = departmentOptionsRef.value.find((option) => option.label === value);
   problem.sources[index].department.departmentID = matchingOption ? matchingOption.value : "-1";
 }
 
 const changePost = (index: number, value: string) => {
   problem.sources[index].post.postName = value;
-  // 找得到ycompanID就赋值，找不到就赋值为-1
+  // 找得到companyID就赋值，找不到就赋值为-1
   const matchingOption = postOptionsRef.value.find((option) => option.label === value);
   problem.sources[index].post.postID = matchingOption ? matchingOption.value : "-1";
 }
@@ -257,7 +257,14 @@ const handleSubmit = (e: MouseEvent) => {
     }
   });
 
-  console.log(problem);
+  if (problem.problemTitle === null) {
+    alert("请输入题目标题");
+    return;
+  }
+  if (problem.problemContent === null) {
+    alert("请输入题目内容");
+    return;
+  }
   
   // const problem2 = problem;
   // problem2.problemContent = JSON.stringify(problem2.problemContent);
