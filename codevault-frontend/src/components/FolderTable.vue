@@ -1,18 +1,19 @@
 <script setup lang="ts">
 import { NDataTable, NIcon, NDropdown, DropdownOption, NMessageProvider } from "naive-ui";
-import type { DataTableColumns } from "naive-ui";
+import type { DataTableColumns, DataTableRowKey } from "naive-ui";
 import { Folder20Filled } from "@vicons/fluent";
 import { FileAltRegular } from "@vicons/fa";
-import { h, ref, nextTick } from "vue";
+import {h, ref, nextTick, onUpdated, inject } from "vue";
 import router from "../router";
 import FileTreeModal from "./FileTreeModal.vue";
 import ConfirmModal from "./ConfirmModal.vue";
+import { deleteMapping } from "../api/request";
 
 type RowData = {
-  key: number
+  id: number
   name: string
   type: string
-  dateModified: string
+  lastModified: string
 }
 
 const createColumns = (): DataTableColumns<RowData> => [
@@ -23,7 +24,7 @@ const createColumns = (): DataTableColumns<RowData> => [
   {
     title: "名称",
     key: "name",
-    // 如果row,name是文件夹, 前面加一个文件夹图标，否则不加
+    // 如果row,name是文件夹, 前面加一个文件夹图标，否则加一个文件图标
     render(row) {
         if ((row.type === "文件夹")) {
             return h(
@@ -33,11 +34,12 @@ const createColumns = (): DataTableColumns<RowData> => [
                 { 
                   style: 'cursor: pointer;color: #096dd9;',
                   onclick : () => {
+                    // 现有的路由加上/文件夹名
                     router.push(
                       {
-                        path: 'folder',
+                        name: "folder",
                         query: {
-                          folderID: row.key.toString()
+                          path: router.currentRoute.value.query.path + "/" + row["name"]
                         }
                       }
                     )
@@ -55,9 +57,9 @@ const createColumns = (): DataTableColumns<RowData> => [
               onclick : () => {
                 router.push(
                   {
-                    path: 'problem',
+                    path: "/problems",
                     query: {
-                      problemID: row.key.toString()
+                      problemID: row.id.toString()
                     }
                   }
                 )
@@ -74,30 +76,11 @@ const createColumns = (): DataTableColumns<RowData> => [
   },
   {
     title: "修改时间",
-    key: "dateModified",
+    key: "lastModified",
   },
 ];
 
-const createData = (): RowData[] => [
-  {
-    key: 1,
-    name: "文件夹1",
-    type: "文件夹",
-    dateModified: "2021-10-10",
-  },
-  {
-    key: 2,
-    name: "文件夹2",
-    type: "文件夹",
-    dateModified: "2021-10-10",
-  },
-  {
-    key: 3,
-    name: "文件3",
-    type: "文件",
-    dateModified: "2021-10-10",
-  },
-];
+const data = ref<RowData[]>([]);
 
 const options: DropdownOption[] = [
   {
@@ -119,15 +102,15 @@ const showFileTreeModal = ref(false);
 const showConfirmModal = ref(false);
 const x = ref(0);
 const y = ref(0);
-const id = ref(0);
-const type = ref("");
+// const id = ref(0);
+// const type = ref("");
+const name = ref("");
 
 const onClickoutside = () => {
   showDropdown.value = false;
 };
 
-const handleSelect = (id: number, type: string, key: string) => {
-  console.log(id, type, key);
+const handleSelect = ( key: string) => {
   if(key === 'rename') {
     console.log('rename');
   } else if(key === 'move') {
@@ -149,21 +132,68 @@ const rowProps = (row: RowData) => {
         x.value = e.clientX;
         y.value = e.clientY;
         showDropdown.value = true;
-        id.value = row.key;
-        type.value = row.type;
+        // id.value = row.id;
+        // type.value = row.type;
+        name.value = row.name;
       });
     },
   };
 };
 
+const props = defineProps({
+  data: {
+    type: Object,
+    required: true
+  }
+});
+
+onUpdated(() => {
+  data.value = props.data as RowData[];
+});
+
+const checkedRowKeysRef = ref<DataTableRowKey[]>([]);
+
+const handleCheck = (keys: DataTableRowKey[]) => {
+  checkedRowKeysRef.value = keys;
+};
+
+const getFolderContent = inject("getFolderContent") as () => void;
+
+const deleteFile = () => {
+  // 从checkedRowKeys.value提取出id和type，删除每一个
+  checkedRowKeysRef.value.forEach((key) => {
+    key = key as string;
+    // 如果第三个字符是数字，说明是文件, 否则是文件夹
+    if(key[2] >= '0' && key[2] <= '9') {
+      // id为第三位到最后一位
+      const id = parseInt(key.slice(2));
+      deleteMapping(`/problems/${id}`, {}).then((res) => {
+        console.log(res);
+      });
+    } else {
+      const id = parseInt(key.slice(3));
+      deleteMapping(`/folder/${id}`, {}).then((res) => {
+        console.log(res);
+      });
+    }
+  });
+  getFolderContent();
+  showConfirmModal.value = false;
+};
+
+const cancelDeleteFile = () => {
+  showConfirmModal.value = false;
+};
 </script>
 
 <template>
   <div>
     <n-data-table
       :columns="createColumns()"
-      :data="createData()"
+      :data="data"
       :row-props="rowProps"
+      :row-key = "row => row.type + row.id"
+      @update-checked-row-keys="handleCheck"
     />
     <n-dropdown
       placement="bottom-start"
@@ -173,11 +203,16 @@ const rowProps = (row: RowData) => {
       :options="options"
       :show="showDropdown"
       :on-clickoutside="onClickoutside"
-      @select="handleSelect(id, type, $event)"
+      @select="handleSelect($event)"
     />
     <FileTreeModal v-model:showFileTreeModal="showFileTreeModal"/>
     <n-message-provider>
-      <ConfirmModal v-model:showConfirmModal="showConfirmModal"/>
+      <ConfirmModal 
+        v-model:showConfirmModal="showConfirmModal"
+        :prompt-message="'确定要删除' + `${checkedRowKeysRef.length}` + '个内容吗？'"
+        @confirmed="deleteFile"
+        @canceled="cancelDeleteFile"
+      />
     </n-message-provider>
   </div>
 </template>

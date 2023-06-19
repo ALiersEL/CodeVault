@@ -1,10 +1,13 @@
 <script setup lang="ts">
 import { h } from "vue";
-import { NSpace, NDataTable, NTag, NButton } from "naive-ui";
+import { NSpace, NDataTable, NTag, NButton, NMessageProvider } from "naive-ui";
 import type { DataTableColumns } from "naive-ui";
-import { onMounted } from "vue";
+import { onMounted, ref } from "vue";
 import router from "../router";
 import { getMapping, deleteMapping } from "../api/request";
+import ConfirmModal from "./ConfirmModal.vue";
+// 导入moment.js
+import moment from "moment";
 
 type RowData = {
   key: number
@@ -12,14 +15,14 @@ type RowData = {
   problemTitle: string
   problemType: string
   difficulty: string
+  lastModified: string
   tags: string[]
 }
 
-const createColumns = ({
-  deleteProblem
-}: {
-  deleteProblem: (rowData: RowData) => void
-}): DataTableColumns<RowData> => [
+const showConfirmModal = ref(false);
+const rowToDelete = ref<RowData>();
+
+const createColumns = (): DataTableColumns<RowData> => [
     {
       title: "状态",
       key: "status"
@@ -38,7 +41,7 @@ const createColumns = ({
             onClick: () => {
               router.push(
                 {
-                  path: 'problem',
+                  path: '/problems',
                   query: {
                     problemID: row.key.toString()
                   }
@@ -64,7 +67,22 @@ const createColumns = ({
       title: "类别",
       key: "tags",
       render (row) {
-        const tags = row.tags.map((tagKey) => {
+        console.log(row.tags);
+        // 如果没有标签(只有一个null)，显示“暂无标签"(仅显示文字)
+        if (row.tags?.length === 1 && row.tags[0] === null) {
+          return h(
+            "span",
+            {
+              style: {
+                color: '#aaa'
+              }
+            },
+            {
+              default: () => '暂无标签'
+            }
+          )
+        }
+        const tags = row.tags?.map((tagKey) => {
           return h(
             NTag,
             {
@@ -83,6 +101,10 @@ const createColumns = ({
       }
     },
     {
+      title: "修改时间",
+      key: "lastModified",
+    },
+    {
       title: "操作",
       key: 'actions',
       render (row) {
@@ -90,7 +112,10 @@ const createColumns = ({
           NButton,
           {
             size: 'small',
-            onClick: () => deleteProblem(row)
+            onClick: () => {
+              showConfirmModal.value = true;
+              rowToDelete.value = row;
+            }
           },
           { default: () => '删除' }
         )
@@ -98,59 +123,46 @@ const createColumns = ({
     }
 ]
 
-const createData = (): RowData[] => [
-  {
-    key: 0,
-    status: "Accepted",
-    problemTitle: "A + B Problem",
-    problemType: "Algorithmic",
-    difficulty: "easy",
-    tags: ['nice', 'developer']
-  },
-  {
-    key: 1,
-    status: "Accepted",
-    problemTitle: "A + B Problem",
-    problemType: "Algorithmic",
-    difficulty: "easy",
-    tags: ['nice', 'developer']
-  },
-  {
-    key: 2,
-    status: "Accepted",
-    problemTitle: "A + B Problem",
-    problemType: "Algorithmic",
-    difficulty: "easy",
-    tags: ['nice', 'developer']
-  }
-]
+const deleteProblem =  () => {
+  const problemID = rowToDelete.value?.key;
+  deleteMapping(`/problems/${problemID}`, {}).then((res) => {
+    console.log(res);
+  });
+}
 
-const data = createData();
-const columns = createColumns({
-    deleteProblem (rowData) {
-        alert(`Deleting ${rowData.problemTitle}`);
-        const problemID = rowData.key;
-        deleteMapping((`problems/${problemID}`), {}).then((res) => {
-            console.log(res);
-        });
-    }
-});
+const cancelDeleteProblem = () => {
+  console.log('cancel');
+}
+
+const data = ref<RowData[]>([]);
+const columns = createColumns();
 const pagination = {
     pageSize: 10
 }
 
 onMounted(() => {
-    console.log('mounted');
     // 从后端获取数据
     getMapping("/users/problemset", {}).then((res) => {
         console.log(res);
+        // 将res.data.data中的每个元素中的problemID，改为key，赋值给data
+        data.value.push(...res.data.data.map((item) => {
+          return {
+            key: item.problemID,
+            status: item.status ? '已完成' : '未完成',
+            problemTitle: item.problemTitle,
+            problemType: item.problemType ? '文字题' : '算法题',
+            difficulty: item.difficulty === 0 ? '简单' : item.difficulty === 1 ? '中等' : '困难',
+            lastModified: moment(item.lastModified).format('YYYY-MM-DD HH:mm:ss'),
+            tags: item.tags
+          }
+        }))
     });
 });
 
 </script>
 
 <template>
-    <div>
+    <div class="container">
         <n-space vertical :size="12">
             <n-data-table
             :bordered="false"
@@ -158,11 +170,23 @@ onMounted(() => {
             :data="data"
             :pagination="pagination"
             />
+            <n-message-provider>
+              <ConfirmModal 
+                v-model:showConfirmModal="showConfirmModal"
+                :promptMessage="'确定要删除题目 ' + rowToDelete?.problemTitle + ' 吗？'"
+                @confirmed="deleteProblem"
+                @canceled="cancelDeleteProblem"
+              />
+            </n-message-provider>
         </n-space>
     </div>
 </template>
 
 <style scoped>
+.container {
+  width: 1200px;
+}
+
 :deep(.hover) {
   color: #1890ff;
 }

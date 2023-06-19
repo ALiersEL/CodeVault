@@ -17,6 +17,7 @@ CREATE TABLE "user" (
 CREATE TABLE folder (
     folder_id SERIAL PRIMARY KEY,
     folder_name VARCHAR(50) NOT NULL,
+    folder_path TEXT NOT NULL,
     parent_folder_id INTEGER DEFAULT NULL,
     date_added TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     last_modified TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -138,12 +139,12 @@ CREATE TABLE code (
 );
 
 
--- 新增用户， 用触发器自动添加该用户的根目录
+-- 新增用户，用触发器自动添加该用户的根目录
 CREATE OR REPLACE FUNCTION add_root_folder()
 RETURNS TRIGGER AS $$
 BEGIN
-    INSERT INTO folder (folder_name, user_id)
-    VALUES ('root', NEW.user_id);
+    INSERT INTO folder (folder_name, folder_path, user_id)
+    VALUES ('root', '~', NEW.user_id);
     RETURN NULL;
 END;
 $$ LANGUAGE plpgsql;
@@ -152,5 +153,78 @@ CREATE TRIGGER add_root_folder_trigger
 AFTER INSERT ON "user"
 FOR EACH ROW
 EXECUTE FUNCTION add_root_folder();
+
+
+-- 修改题目，文件夹，笔记，代码时，更新最后修改时间
+CREATE OR REPLACE FUNCTION update_last_modified()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.last_modified = NOW();
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER update_problem_last_modified_trigger
+BEFORE UPDATE ON problem
+FOR EACH ROW
+EXECUTE FUNCTION update_last_modified();
+
+CREATE TRIGGER update_folder_last_modified_trigger
+BEFORE UPDATE ON folder
+FOR EACH ROW
+EXECUTE FUNCTION update_last_modified();
+
+CREATE TRIGGER update_note_last_modified_trigger
+BEFORE UPDATE ON note
+FOR EACH ROW
+EXECUTE FUNCTION update_last_modified();
+
+CREATE TRIGGER update_code_last_modified_trigger
+BEFORE UPDATE ON code
+FOR EACH ROW
+EXECUTE FUNCTION update_last_modified();
+
+
+-- 新增题目时，更新题目总数
+CREATE OR REPLACE FUNCTION update_total()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF NEW.problem_type = 1 THEN
+        UPDATE "user" SET total_easy = total_easy + 1 WHERE user_id = NEW.user_id;
+    ELSIF NEW.problem_type = 2 THEN
+        UPDATE "user" SET total_medium = total_medium + 1 WHERE user_id = NEW.user_id;
+    ELSIF NEW.problem_type = 3 THEN
+        UPDATE "user" SET total_hard = total_hard + 1 WHERE user_id = NEW.user_id;
+    END IF;
+    RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER update_total_trigger
+AFTER INSERT ON problem
+FOR EACH ROW
+EXECUTE FUNCTION update_total();
+
+
+-- 删除题目时，更新题目总数
+CREATE OR REPLACE FUNCTION update_total_delete()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF OLD.problem_type = 1 THEN
+        UPDATE "user" SET total_easy = total_easy - 1 WHERE user_id = OLD.user_id;
+    ELSIF OLD.problem_type = 2 THEN
+        UPDATE "user" SET total_medium = total_medium - 1 WHERE user_id = OLD.user_id;
+    ELSIF OLD.problem_type = 3 THEN
+        UPDATE "user" SET total_hard = total_hard - 1 WHERE user_id = OLD.user_id;
+    END IF;
+    RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+
+CREATE TRIGGER update_total_delete_trigger
+BEFORE DELETE ON problem
+FOR EACH ROW
+EXECUTE FUNCTION update_total_delete();
 
 

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { NTabs, NTabPane } from "naive-ui";
-import CodeEditorVue from "./CodeEditor.vue";
+import CodeEditor from "./CodeEditor.vue";
 import NoteEditor from "./NoteEditor.vue";
 import CodeTable from "./CodeTable.vue";
 import NoteTable from "./NoteTable.vue";
@@ -10,7 +10,7 @@ import DiffEditor from "./DiffEditor.vue";
 <template>
     <n-tabs :bar-width="28" type="line" class="custom-tabs">
         <n-tab-pane name="CodeEditor" tab="新增代码" display-directive="show:lazy">
-            <CodeEditorVue />
+            <CodeEditor />
         </n-tab-pane>
         <n-tab-pane name="NoteEditor" tab="新增笔记" display-directive="show:lazy">
             <NoteEditor />

@@ -8,10 +8,15 @@ const props = defineProps({
   showConfirmModal: {
     type: Boolean,
     required: true
+  },
+  promptMessage: {
+    type: String,
+    required: true
   }
 });
 
-const emit = defineEmits(["update:showConfirmModal"]);
+const emit = defineEmits(["update:showConfirmModal", "confirmed", "canceled"]);
+
 
 const showConfirmModal = computed({
   get: () => props.showConfirmModal,
@@ -19,10 +24,12 @@ const showConfirmModal = computed({
 });
 
 const submitCallback = () => {
+  emit("confirmed");
   message.success("确认");
 };
 
 const cancelCallback = () => {
+  emit("canceled");
   message.info("取消");
 };
 
@@ -34,7 +41,7 @@ const cancelCallback = () => {
           v-model:show="showConfirmModal"
           preset="dialog"
           title="确认"
-          content="你确认?"
+          :content="promptMessage"
           positive-text="确认"
           negative-text="取消"
           @positive-click="submitCallback"

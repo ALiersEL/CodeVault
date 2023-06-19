@@ -134,8 +134,8 @@ const handleSubmit = () => {
 }
 .code-editor {
   width: 100%;
-  display: flex;
-  height: 81vh; /* 根据需要设置编辑器的高度 */
+  /* 根据浏览器高度自适应 */
+  height: calc(100vh - 195px);
   margin-top: 10px;
 }
 </style>

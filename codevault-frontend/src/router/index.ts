@@ -41,16 +41,16 @@ const routes: Array<RouteRecordRaw> = [
     meta: { requiresAuth: false },
   },
   {
-    path: "/problem",
+    path: "/problems",
     component: () => import("../views/ProblemDetails.vue"),
     meta: { requiresAuth: true },
   },
   {
-    path: "/folder/:path*",
+    path: "/folder",
     name: "folder",
     component: () => import("../views/ProblemArchive.vue"),
     meta: { requiresAuth: true },
-  }
+  },
 ]
 
 //导入路由，使用history模式
@@ -81,6 +81,14 @@ router.beforeEach((to, from, next) => {
     })    
   } else {
     next(); // 放行，继续访问目标页面
+  }
+  
+  //文件夹跳转
+  if(to.name === 'folder'){
+    // 如果to.query.path不存在，则将其设置为~
+    if(!to.query.path){
+      to.query.path = '~';
+    }
   }
 });
 

@@ -1,22 +1,25 @@
 package com.aliersel.codevaultbackend.mapper;
 
-import com.aliersel.codevaultbackend.entity.Category;
-import com.aliersel.codevaultbackend.entity.Code;
-import com.aliersel.codevaultbackend.entity.Note;
-import com.aliersel.codevaultbackend.entity.Problem;
+import com.aliersel.codevaultbackend.controller.entity.Source;
+import com.aliersel.codevaultbackend.entity.*;
 import org.apache.ibatis.annotations.*;
 
 import java.util.List;
 
 @Mapper
 public interface ProblemMapper {
-    @Insert("INSERT INTO problem" +
+    @Insert("INSERT INTO problem " +
             "(problem_title,problem_content,problem_type,difficulty,status,mastery,user_id) " +
-            "VALUES(#{problemTitle}, #{problemContent}, #{problemType}, #{difficulty}, #{status}, #{mastery}, #{userID})" +
-            "RETURNING problem_id"
-    )
+            "VALUES(#{problemTitle}, #{problemContent}, #{problemType}, #{difficulty}, #{status}, #{mastery}, #{userID}) " +
+            "RETURNING problem_id")
     @Options(useGeneratedKeys = true, keyProperty = "problemID", keyColumn = "problem_id")
-    void addProblem(Problem problem);
+    void saveProblem(Problem problem);
+
+    @Update("UPDATE problem " +
+            "SET (problem_title,problem_content,problem_type,difficulty,status,mastery,user_id) = " +
+            "(#{problemTitle}, #{problemContent}, #{problemType}, #{difficulty}, #{status}, #{mastery}, #{userID}) " +
+            "WHERE problem_id = #{problemID}")
+    void updateProblem(Problem problem);
 
     @Select("SELECT * " +
             "FROM problem " +
@@ -27,39 +30,94 @@ public interface ProblemMapper {
             "WHERE problem_id = #{problemID}")
     Boolean deleteByProblemID(Integer problemID);
 
-    @Insert("INSERT INTO problem_company" +
+    @Insert("INSERT INTO problem_company " +
             "(problem_id,company_id) " +
-            "VALUES(#{problemID}, #{companyID})"
-    )
-    Boolean addCompany(Integer problemID, Integer companyID);
+            "VALUES(#{problemID}, #{companyID})")
+    Boolean saveCompany(Integer problemID, Integer companyID);
 
-    @Insert("INSERT INTO problem_department" +
+    @Delete("DELETE FROM problem_company " +
+            "WHERE problem_id = #{problemID} " +
+            "AND company_id = #{companyID}")
+    Boolean deleteCompany(Integer problemID, Integer companyID);
+
+    @Select("SELECT company_id " +
+            "FROM problem_company " +
+            "WHERE problem_id = #{problemID}")
+    List<Integer> findCompanyIDsByProblemID(Integer problemID);
+
+    @Insert("INSERT INTO problem_department " +
             "(problem_id,department_id) " +
-            "VALUES(#{problemID}, #{departmentID})"
-    )
-    Boolean addDepartment(Integer problemID, Integer departmentID);
+            "VALUES(#{problemID}, #{departmentID})")
+    Boolean saveDepartment(Integer problemID, Integer departmentID);
 
-    @Insert("INSERT INTO problem_post" +
+    @Delete("DELETE FROM problem_department " +
+            "WHERE problem_id = #{problemID} " +
+            "AND department_id = #{departmentID}")
+    Boolean deleteDepartment(Integer problemID, Integer departmentID);
+
+    @Select("SELECT department_id " +
+            "FROM problem_department " +
+            "WHERE problem_id = #{problemID}")
+    List<Integer> findDepartmentIDsByProblemID(Integer problemID);
+
+    @Insert("INSERT INTO problem_post " +
             "(problem_id,post_id) " +
-            "VALUES(#{problemID}, #{postID})"
-    )
-    Boolean addPost(Integer problemID, Integer postID);
+            "VALUES(#{problemID}, #{postID})")
+    Boolean savePost(Integer problemID, Integer postID);
 
-    @Insert("INSERT INTO problem_category" +
+    @Delete("DELETE FROM problem_post " +
+            "WHERE problem_id = #{problemID} " +
+            "AND post_id = #{postID}")
+    Boolean deletePost(Integer problemID, Integer postID);
+
+    @Select("SELECT post_id " +
+            "FROM problem_post " +
+            "WHERE problem_id = #{problemID}")
+    List<Integer> findPostIDsByProblemID(Integer problemID);
+
+    @Select("SELECT company_name, company.company_id, NULL, CAST(NULL AS INTEGER), NULL, CAST(NULL AS INTEGER) " +
+            "FROM problem_company " +
+            "INNER JOIN company ON problem_company.company_id = company.company_id " +
+            "WHERE problem_company.problem_id = #{problemID} " +
+            "UNION " +
+            "SELECT company_name, company.company_id, department_name, department.department_id, NULL, CAST(NULL AS INTEGER) " +
+            "FROM problem_department " +
+            "INNER JOIN department ON problem_department.department_id = department.department_id " +
+            "INNER JOIN company ON department.company_id = company.company_id " +
+            "WHERE problem_department.problem_id = #{problemID} " +
+            "UNION " +
+            "SELECT company_name, company.company_id, department_name, department.department_id, post_name, post.post_id " +
+            "FROM problem_post " +
+            "INNER JOIN post ON problem_post.post_id = post.post_id " +
+            "INNER JOIN department ON post.department_id = department.department_id " +
+            "INNER JOIN company ON department.company_id = company.company_id " +
+            "WHERE problem_post.problem_id = #{problemID}")
+    List<Source> findSourcesByProblemID(Integer problemID);
+
+    @Insert("INSERT INTO problem_category " +
             "(problem_id,category_id) " +
             "VALUES(#{problemID}, #{categoryID})")
-    Boolean addCategory(Integer problemID, Integer categoryID);
+    Boolean saveCategory(Integer problemID, Integer categoryID);
 
-    @Select("SELECT * " +
+    @Delete("DELETE FROM problem_category " +
+            "WHERE problem_id = #{problemID} AND category_id = #{categoryID}")
+    Boolean deleteCategory(Integer problemID, Integer categoryID);
+
+    @Select("SELECT category_name, category.category_id " +
             "FROM problem_category " +
-            "WHERE problem_id = #{problemID} " +
-            "INNER JOIN category ON problem_category.category_id = category.category_id")
+            "INNER JOIN category ON problem_category.category_id = category.category_id " +
+            "WHERE problem_category.problem_id = #{problemID}")
     List<Category> findCategoriesByProblemID(Integer problemID);
 
-    @Insert("INSERT INTO code" +
+    @Select("SELECT category_id " +
+            "FROM problem_category " +
+            "WHERE problem_id = #{problemID}")
+    List<Integer> findCategoryIDsByProblemID(Integer problemID);
+
+    @Insert("INSERT INTO code " +
             "(code_text,code_language,problem_id) " +
             "VALUES(#{codeText}, #{codeLanguage}, #{problemID})")
-    Boolean addCode(Code code, Integer problemID);
+    Boolean saveCode(Code code, Integer problemID);
 
     @Select("SELECT * " +
             "FROM code " +
@@ -71,10 +129,10 @@ public interface ProblemMapper {
             "WHERE code_id = #{codeID}")
     Code findCodeByCodeID(Integer codeID);
 
-    @Insert("INSERT INTO note" +
+    @Insert("INSERT INTO note " +
             "(note_text,problem_id) " +
             "VALUES(#{noteText}, #{problemID})")
-    Boolean addNote(Note note, Integer problemID);
+    Boolean saveNote(Note note, Integer problemID);
 
     @Select("SELECT * " +
             "FROM note " +
