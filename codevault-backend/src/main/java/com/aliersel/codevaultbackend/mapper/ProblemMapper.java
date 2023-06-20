@@ -117,7 +117,7 @@ public interface ProblemMapper {
     @Insert("INSERT INTO code " +
             "(code_text,code_language,problem_id) " +
             "VALUES(#{codeText}, #{codeLanguage}, #{problemID})")
-    Boolean saveCode(Code code, Integer problemID);
+    Boolean saveCode(Code code);
 
     @Select("SELECT * " +
             "FROM code " +
@@ -132,7 +132,7 @@ public interface ProblemMapper {
     @Insert("INSERT INTO note " +
             "(note_text,problem_id) " +
             "VALUES(#{noteText}, #{problemID})")
-    Boolean saveNote(Note note, Integer problemID);
+    Boolean saveNote(Note note);
 
     @Select("SELECT * " +
             "FROM note " +

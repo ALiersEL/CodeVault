@@ -22,7 +22,7 @@ import { Add } from "@vicons/ionicons5";
 // 导入富文本编辑器quill
 import { QuillEditor } from "@vueup/vue-quill";
 import "@vueup/vue-quill/dist/vue-quill.snow.css";
-import { postMapping } from "../api/request";
+import { postMapping, getMapping } from "../api/request";
 
 const formRef = ref<VNodeRef | null>(null);
 
@@ -124,6 +124,14 @@ const postOptionsRef = ref<option[]>([]);
 
 // onMounted, 从后端获取当前用户的tagOptions, companyOptions
 onMounted(() => {
+  getMapping("/users/tags", {}).then((res) => {
+    tagOptionsRef.value = res.data.data.map((item: any) => {
+      return {
+        label: item.name,
+        value: item.id
+      };
+    });
+  });
   console.log(departmentOptionsRef.value);
 });
 

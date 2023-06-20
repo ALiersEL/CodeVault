@@ -1,6 +1,7 @@
 package com.aliersel.codevaultbackend.service.impl;
 
 import com.aliersel.codevaultbackend.controller.entity.FileWithTypes;
+import com.aliersel.codevaultbackend.entity.Folder;
 import com.aliersel.codevaultbackend.mapper.FolderMapper;
 import com.aliersel.codevaultbackend.service.intf.FolderService;
 import com.aliersel.codevaultbackend.utils.Result;
@@ -8,6 +9,7 @@ import com.aliersel.codevaultbackend.utils.ResultUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.net.Inet4Address;
 import java.util.List;
 
 @Service
@@ -20,6 +22,16 @@ public class FolderServiceImpl implements FolderService {
         try {
             List<FileWithTypes> files = folderMapper.findFilesByFolderPath(userID, folderPath);
             return ResultUtil.success(files);
+        } catch (Exception e) {
+            return ResultUtil.error(500, "获取失败");
+        }
+    }
+
+    @Override
+    public Result<List<Folder>> getFoldersByFolderID(Integer userID, Integer folderID) {
+        try {
+            List<Folder> folders = folderMapper.findFoldersByFolderID(userID, folderID);
+            return ResultUtil.success(folders);
         } catch (Exception e) {
             return ResultUtil.error(500, "获取失败");
         }
@@ -39,11 +51,19 @@ public class FolderServiceImpl implements FolderService {
     @Override
     public Result deleteFolder(Integer userID, Integer folderID) {
         try {
-            System.out.println();
             folderMapper.deleteFolder(userID, folderID);
             return ResultUtil.success();
         } catch (Exception e) {
             return ResultUtil.error(500, "删除失败");
+        }
+    }
+
+    @Override
+    public Result<Integer> getFolderIDByFolderPath(Integer userID, String folderPath) {
+        try {
+            return ResultUtil.success(folderMapper.findFolderIDByFolderPath(userID, folderPath));
+        } catch (Exception e) {
+            return ResultUtil.error(500, "查找失败");
         }
     }
 }

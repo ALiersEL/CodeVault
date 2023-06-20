@@ -4,10 +4,11 @@ import { NSpace, NDataTable, NTag, NButton, NMessageProvider } from "naive-ui";
 import type { DataTableColumns } from "naive-ui";
 import { onMounted, ref } from "vue";
 import router from "../router";
-import { getMapping, deleteMapping } from "../api/request";
+import { getMapping, deleteMapping, postMapping } from "../api/request";
 import ConfirmModal from "./ConfirmModal.vue";
 // 导入moment.js
 import moment from "moment";
+import emitter from "../utils/bus";
 
 type RowData = {
   key: number
@@ -25,7 +26,9 @@ const rowToDelete = ref<RowData>();
 const createColumns = (): DataTableColumns<RowData> => [
     {
       title: "状态",
-      key: "status"
+      key: "status",
+      defaultSortOrder: 'ascend',
+      sorter: 'default'
     },
     {
       title: "题目标题",
@@ -53,15 +56,26 @@ const createColumns = (): DataTableColumns<RowData> => [
             default: () => row.problemTitle
           }
         )
-      }
+      },
+      sorter: 'default'
     },
     {
       title: "题目类型",
       key: "problemType",
+      sorter: 'default'
     },
     {
       title: "难度",
       key: "difficulty",
+      // 简单 < 中等 < 困难
+      sorter: (a, b) => {
+        const difficultyMap = {
+          简单: 1,
+          中等: 2,
+          困难: 3
+        }
+        return difficultyMap[a.difficulty] - difficultyMap[b.difficulty]
+      }
     },
     {
       title: "类别",
@@ -103,6 +117,8 @@ const createColumns = (): DataTableColumns<RowData> => [
     {
       title: "修改时间",
       key: "lastModified",
+      defaultSortOrder: 'descend',
+      sorter: 'default'
     },
     {
       title: "操作",
@@ -128,6 +144,8 @@ const deleteProblem =  () => {
   deleteMapping(`/problems/${problemID}`, {}).then((res) => {
     console.log(res);
   });
+  // 刷寻页面
+  router.go(0);
 }
 
 const cancelDeleteProblem = () => {
@@ -140,9 +158,34 @@ const pagination = {
     pageSize: 10
 }
 
-onMounted(() => {
-    // 从后端获取数据
-    getMapping("/users/problemset", {}).then((res) => {
+const getFilteredData = (selectedOptions: JSON) => {
+  // console.log(selectedType.value, selectedDifficulty.value, selectedStatus.value, selectedTags.value, searchKey.value);
+  postMapping("/users/problemset/filtered", {
+    selectedType: selectedOptions['selectedType'],
+    selectedDifficulty: selectedOptions['selectedDifficulty'],
+    selectedStatus: selectedOptions['selectedStatus'],
+    selectedTags: selectedOptions['selectedTags'],
+    searchKey: selectedOptions['searchKey']
+  }).then((res) => {
+    console.log(res);
+    // 将res.data.data中的每个元素中的problemID，改为key，赋值给data
+    data.value = res.data.data.data.map((item) => {
+      return {
+        key: item.problemID,
+        status: item.status ? '已完成' : '未完成',
+        problemTitle: item.problemTitle,
+        problemType: item.problemType ? '文字题' : '算法题',
+        difficulty: item.difficulty === 0 ? '简单' : item.difficulty === 1 ? '中等' : '困难',
+        lastModified: moment(item.lastModified).format('YYYY-MM-DD HH:mm:ss'),
+        tags: item.tags
+      }
+    })
+  });
+}
+
+const getProblems = () => {
+  // 从后端获取数据
+  getMapping("/users/problemset", {}).then((res) => {
         console.log(res);
         // 将res.data.data中的每个元素中的problemID，改为key，赋值给data
         data.value.push(...res.data.data.map((item) => {
@@ -157,6 +200,11 @@ onMounted(() => {
           }
         }))
     });
+}
+
+emitter.on('filter', getFilteredData)
+onMounted(() => {
+  getProblems();
 });
 
 </script>

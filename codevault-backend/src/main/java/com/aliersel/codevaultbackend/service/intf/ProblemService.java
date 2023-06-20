@@ -12,7 +12,7 @@ import java.util.List;
 
 public interface ProblemService {
     Result<Integer> addProblem(Problem problem);
-    Result<JSONObject> processProblemRequest(String token, JSONObject problemRequest);
+    Result<JSONObject> processProblemRequest(String token, JSONObject problemRequest, Integer folderID);
     Result updateProblem(Problem problem);
     Result<Problem> findByProblemID(Integer problemID);
     Result deleteByProblemID(Integer problemID);
@@ -31,10 +31,10 @@ public interface ProblemService {
     Result deleteCategories(Integer problemID, List<Integer> categoryIDs);
     Result<List<Category>> findCategoriesByProblemID(Integer problemID);
     Result<List<Integer>> findCategoryIDsByProblemID(Integer problemID);
-    Result addCode(Code code, Integer problemID);
+    Result addCode(Code code);
     Result findCodesByProblemID(Integer problemID);
     Result findCodeByCodeID(Integer codeID);
-    Result addNote(Note note, Integer problemID);
+    Result addNote(Note note);
     Result findNotesByProblemID(Integer problemID);
     Result findNoteByNoteID(Integer noteID);
 }

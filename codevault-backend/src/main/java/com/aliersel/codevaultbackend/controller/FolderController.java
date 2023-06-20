@@ -2,6 +2,7 @@ package com.aliersel.codevaultbackend.controller;
 
 import com.alibaba.fastjson2.JSONObject;
 import com.aliersel.codevaultbackend.controller.entity.FileWithTypes;
+import com.aliersel.codevaultbackend.entity.Folder;
 import com.aliersel.codevaultbackend.security.JwtTokenProvider;
 import com.aliersel.codevaultbackend.service.intf.FolderService;
 import com.aliersel.codevaultbackend.utils.Result;
@@ -28,6 +29,16 @@ public class FolderController {
             } catch (Exception e) {
                 return ResultUtil.error(500, "获取失败");
          }
+    }
+
+    @GetMapping
+    public Result<List<Folder>> getFoldersByFolderID(@RequestHeader("Authorization") String token, @RequestParam(value = "folderID") Integer folderID) {
+        try {
+            Integer userID = jwtTokenProvider.getUserid(token.split(" ")[1].trim());
+            return folderService.getFoldersByFolderID(userID, folderID);
+        } catch (Exception e) {
+            return ResultUtil.error(500, "获取失败");
+        }
     }
 
     @PostMapping

@@ -227,4 +227,7 @@ BEFORE DELETE ON problem
 FOR EACH ROW
 EXECUTE FUNCTION update_total_delete();
 
+-- 全文关键词匹配
+CREATE INDEX idx_problem_en_fulltext ON problem USING gin(to_tsvector('english', problem_title || ' ' || problem_content));
+CREATE INDEX idx_problem_cn_fulltext ON problem USING gin(to_tsvector('zhcnsearch', problem_title || ' ' || problem_content));
 

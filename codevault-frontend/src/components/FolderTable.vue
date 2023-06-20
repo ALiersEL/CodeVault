@@ -68,7 +68,8 @@ const createColumns = (): DataTableColumns<RowData> => [
             " " + row["name"] ),
         ]
         );
-    }
+    },
+    sorter: 'default'
   },
   {
     title: "类型",
@@ -77,6 +78,7 @@ const createColumns = (): DataTableColumns<RowData> => [
   {
     title: "修改时间",
     key: "lastModified",
+    sorter: 'default'
   },
 ];
 

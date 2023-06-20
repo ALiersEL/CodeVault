@@ -51,6 +51,16 @@ const routes: Array<RouteRecordRaw> = [
     component: () => import("../views/ProblemArchive.vue"),
     meta: { requiresAuth: true },
   },
+  {
+    path: "/problems/codes",
+    component: () => import("../components/CodeDisplay.vue"),
+    meta: { requiresAuth: true },
+  },
+  {
+    path: "/problems/notes",
+    component: () => import("../components/NoteDisplay.vue"),
+    meta: { requiresAuth: true },
+  }
 ]
 
 //导入路由，使用history模式
