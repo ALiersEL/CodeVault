@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, computed, onMounted, onUpdated, nextTick, h } from "vue";
+import { ref, watch, computed, onMounted, nextTick, h } from "vue";
 import {
   NForm,
   NFormItem,
@@ -22,7 +22,7 @@ import { Add } from "@vicons/ionicons5";
 // 导入富文本编辑器quill
 import { QuillEditor } from "@vueup/vue-quill";
 import "@vueup/vue-quill/dist/vue-quill.snow.css";
-import { putMapping } from "../api/request";
+import { putMapping, getMapping } from "../api/request";
 import router from "../router";
 
 const formRef = ref<FormInst | null>(null);
@@ -112,12 +112,15 @@ const postOptionsRef = ref<option[]>([]);
 
 // onMounted, 从后端获取当前用户的tagOptions, companyOptions
 onMounted(() => {
-  console.log(departmentOptionsRef.value);
-  console.log(problem.value);
+  getMapping("/users/tags", {}).then((res) => {
+    tagOptionsRef.value = res.data.data.map((item: any) => {
+      return {
+        label: item.name,
+        value: item.id
+      };
+    });
+  });
 });
-
-onUpdated(() => {});
-
 
 const autoCompleteInstRef = ref<AutoCompleteInst | null>(null);
 
@@ -406,6 +409,7 @@ const handleCancel = () => {
               placeholder="Select"
               :options="companyOptionsRef"
               @update:value="changeCompany(index, $event)"
+              clearable
             />
           </n-form-item>
           <n-form-item>
@@ -418,6 +422,7 @@ const handleCancel = () => {
               :options="departmentOptionsRef"
               :disabled="!item.company.companyName"
               @update:value="changeDepartment(index, $event)"
+              clearable
             />
           </n-form-item>
           <n-form-item>
@@ -430,6 +435,7 @@ const handleCancel = () => {
               :options="postOptionsRef"
               :disabled="!item.department.departmentName"
               @update:value="changePost(index, $event)"
+              clearable
             />
           </n-form-item>
           <n-button style="margin-left: 12px;top: -10px;" @click="removeSource(index)">

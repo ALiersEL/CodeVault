@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { h } from 'vue'
+import { h, onMounted,ref } from 'vue'
 import { NTree, NIcon, TreeOption } from 'naive-ui'
 import {
     Folder,
     FolderOpenOutline,
     FileTrayFullOutline
 } from '@vicons/ionicons5'
+import { getMapping } from '../api/request'
 
 const updatePrefixWithExpaned = (
     _keys: Array<string | number>,
@@ -42,45 +43,65 @@ const nodeProps = ({ option }: { option: TreeOption }) => {
     }
 };
 
-const data = [
-    {
-    key: '文件夹',
-    label: '文件夹',
-    prefix: () =>
-        h(NIcon, null, {
-        default: () => h(Folder)
-        }),
-    children: [
-        {
-        key: '空的',
-        label: '空的',
-        disabled: true,
-        prefix: () =>
-            h(NIcon, null, {
-            default: () => h(Folder)
-            })
-        },
-        {
-        key: '我的文件',
-        label: '我的文件',
-        prefix: () =>
-            h(NIcon, null, {
-            default: () => h(Folder)
-            }),
-        children: [
-            {
-            label: 'template.txt',
-            key: 'template.txt',
-            prefix: () =>
-                h(NIcon, null, {
-                default: () => h(FileTrayFullOutline)
-                })
-            }
-        ]
+// const data = [
+//     {
+//     key: '文件夹',
+//     label: '文件夹',
+//     prefix: () =>
+//         h(NIcon, null, {
+//         default: () => h(Folder)
+//         }),
+//     children: [
+//         {
+//         key: '空的',
+//         label: '空的',
+//         disabled: true,
+//         prefix: () =>
+//             h(NIcon, null, {
+//             default: () => h(Folder)
+//             })
+//         },
+//         {
+//         key: '我的文件',
+//         label: '我的文件',
+//         prefix: () =>
+//             h(NIcon, null, {
+//             default: () => h(Folder)
+//             }),
+//         children: [
+//             {
+//             label: 'template.txt',
+//             key: 'template.txt',
+//             prefix: () =>
+//                 h(NIcon, null, {
+//                 default: () => h(FileTrayFullOutline)
+//                 })
+//             }
+//         ]
+//         }
+//     ]
+//     }
+// ]
+
+type FileTree = {
+    key: string
+    label: string
+    children?: FileTree[]
+}
+const data = ref<FileTree[]>([])
+
+onMounted(() => {
+    getMapping("/folder/?folderID=1",{}).then(res => {
+        console.log(res);
+        if (res.data.code !== 200) {
+            console.log("获取文件夹失败");
+            return;
         }
-    ]
+        // 将res.data.data挂载到data上
+        data.value = res.data.data;
+    })
     }
-]
+);
 </script>
 
 <template>

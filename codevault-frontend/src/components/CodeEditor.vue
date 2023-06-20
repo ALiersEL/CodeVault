@@ -87,11 +87,17 @@ const handleSubmit = () => {
   console.log(languageValue);
   console.log(problemID);
   // 提交代码
-  postMapping(`problem/${problemID}/codes`, {
+  postMapping(`problems/${problemID}/codes`, {
     code: codeValue,
     language: languageValue,
   }).then((res) => {
-    console.log(res);
+    if (res.data.code === 200) {
+      console.log("提交成功");
+      alert("提交成功")
+    } else {
+      console.log("提交失败");
+    }
+    router.go(0);
   });
 
 };

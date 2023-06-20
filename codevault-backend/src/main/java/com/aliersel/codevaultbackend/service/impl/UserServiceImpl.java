@@ -1,8 +1,10 @@
 package com.aliersel.codevaultbackend.service.impl;
 
 import com.aliersel.codevaultbackend.controller.entity.CategoryWithCounts;
+import com.aliersel.codevaultbackend.controller.entity.CompanyWithCounts;
 import com.aliersel.codevaultbackend.controller.entity.ProblemWithTags;
 import com.aliersel.codevaultbackend.entity.*;
+import com.aliersel.codevaultbackend.mapper.CompanyMapper;
 import com.aliersel.codevaultbackend.mapper.UserMapper;
 import com.aliersel.codevaultbackend.security.JwtTokenProvider;
 import com.aliersel.codevaultbackend.service.intf.UserService;
@@ -25,6 +27,8 @@ public class UserServiceImpl implements UserService {
     private PasswordEncoder passwordEncoder;
     @Autowired
     private JwtTokenProvider jwtTokenProvider;
+    @Autowired
+    private CompanyMapper companyMapper;
 
     @Override
     public Result register(User user) {
@@ -83,6 +87,28 @@ public class UserServiceImpl implements UserService {
         } catch (Exception e) {
             e.printStackTrace();
             return ResultUtil.error(400, "Add company failed");
+        }
+    }
+
+    @Override
+    public Result updateCompany(Company company) {
+        try {
+            userMapper.updateCompany(company);
+            return ResultUtil.success();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResultUtil.error(400, "Update company failed");
+        }
+    }
+
+    @Override
+    public Result deleteCompany(Integer companyID) {
+        try {
+            userMapper.deleteCompany(companyID);
+            return ResultUtil.success();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResultUtil.error(400, "Delete company failed");
         }
     }
 
@@ -151,6 +177,16 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public Result<Page<ProblemWithTags>> getFilteredProblemsByUserID(Integer userID, Integer type, Integer difficulty, Boolean status, List<Integer> tagIDs, String keyword) {
+        try {
+            return ResultUtil.success(userMapper.findFilteredProblemsByUserID(userID, type, difficulty, status, tagIDs, keyword));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResultUtil.error(400, "Get problems failed");
+        }
+    }
+
+    @Override
     public Result<List<CategoryWithCounts>> getCategoriesByUserID(Integer userID) {
         try {
             return ResultUtil.success(userMapper.findCategoriesByUserID(userID));
@@ -193,6 +229,36 @@ public class UserServiceImpl implements UserService {
         } catch (Exception e) {
             e.printStackTrace();
             return ResultUtil.error(400, "Delete category failed");
+        }
+    }
+
+    @Override
+    public Result<List<CompanyWithCounts>> getCompaniesByUserID(Integer userID) {
+        try {
+            return ResultUtil.success(companyMapper.findCompaniesByUserID(userID));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResultUtil.error(400, "Get companies failed");
+        }
+    }
+
+    @Override
+    public Result<List<Department>> getDepartmentsByCompanyID(Integer companyID) {
+        try {
+            return ResultUtil.success(companyMapper.findDepartmentsByCompanyID(companyID));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResultUtil.error(400, "Get departments failed");
+        }
+    }
+
+    @Override
+    public Result<List<Post>> getPostsByDepartmentID(Integer departmentID) {
+        try {
+            return ResultUtil.success(companyMapper.findPostsByDepartmentID(departmentID));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResultUtil.error(400, "Get posts failed");
         }
     }
 }

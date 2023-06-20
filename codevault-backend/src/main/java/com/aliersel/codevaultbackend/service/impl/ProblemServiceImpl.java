@@ -41,7 +41,7 @@ public class ProblemServiceImpl implements ProblemService {
     }
 
     @Override
-    public Result<JSONObject> processProblemRequest(String token, JSONObject problemRequest) {
+    public Result<JSONObject> processProblemRequest(String token, JSONObject problemRequest,Integer folderID) {
         try {
             Integer userID = jwtTokenProvider.getUserid(token.split(" ")[1].trim());
             System.out.println(problemRequest);
@@ -149,6 +149,7 @@ public class ProblemServiceImpl implements ProblemService {
             problem.setDifficulty(problemRequest.getInteger("difficulty"));
             problem.setProblemType(problemRequest.getInteger("problemType"));
             problem.setUserID(userID);
+            problem.setFolderID(folderID);
 //            System.out.println(problem);
 
             JSONObject jsonObject = new JSONObject();
@@ -390,9 +391,9 @@ public class ProblemServiceImpl implements ProblemService {
     }
 
     @Override
-    public Result addCode(Code code, Integer problemID) {
+    public Result addCode(Code code) {
         try {
-            problemMapper.saveCode(code, problemID);
+            problemMapper.saveCode(code);
             return ResultUtil.success();
         } catch (Exception e) {
             e.printStackTrace();
@@ -421,9 +422,9 @@ public class ProblemServiceImpl implements ProblemService {
     }
 
     @Override
-    public Result addNote(Note note, Integer problemID) {
+    public Result addNote(Note note) {
         try {
-            problemMapper.saveNote(note, problemID);
+            problemMapper.saveNote(note);
             return ResultUtil.success();
         } catch (Exception e) {
             e.printStackTrace();

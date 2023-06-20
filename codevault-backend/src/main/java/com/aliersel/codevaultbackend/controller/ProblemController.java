@@ -1,9 +1,11 @@
 package com.aliersel.codevaultbackend.controller;
 
 import com.alibaba.fastjson2.JSONObject;
+import com.aliersel.codevaultbackend.constant.enums.CodeLanguage;
 import com.aliersel.codevaultbackend.controller.entity.Source;
 import com.aliersel.codevaultbackend.entity.*;
 import com.aliersel.codevaultbackend.security.JwtTokenProvider;
+import com.aliersel.codevaultbackend.service.intf.FolderService;
 import com.aliersel.codevaultbackend.service.intf.ProblemService;
 import com.aliersel.codevaultbackend.service.intf.UserService;
 import com.aliersel.codevaultbackend.utils.Result;
@@ -21,13 +23,16 @@ public class ProblemController {
     @Autowired
     private ProblemService problemService;
     @Autowired
+    private FolderService folderService;
+    @Autowired
     private JwtTokenProvider jwtTokenProvider;
 
     @PostMapping
     // 从header中获取token，从token中获取userID，从requestBody中获取problem
     public Result add(@RequestHeader("Authorization") String token, @RequestBody JSONObject problemRequest) {
         try {
-            JSONObject jsonObject = problemService.processProblemRequest(token, problemRequest).getData();
+            Integer folderID = 1;
+            JSONObject jsonObject = problemService.processProblemRequest(token, problemRequest,folderID).getData();
             Integer userID = jsonObject.getInteger("userID");
             Problem problem = jsonObject.getObject("problem", Problem.class);
             List<String> labelList = jsonObject.getObject("labelList", List.class);
@@ -65,10 +70,57 @@ public class ProblemController {
         }
     }
 
+    @PostMapping("/folder")
+    public Result addByFolder(@RequestHeader("Authorization") String token, @RequestBody JSONObject problemRequest) {
+        try {
+            Integer userID = jwtTokenProvider.getUserid(token.split(" ")[1].trim());
+            String folderPath = problemRequest.getString("folderPath");
+            Integer folderID = folderService.getFolderIDByFolderPath(userID, folderPath).getData();
+            JSONObject jsonObject = problemService.processProblemRequest(token, problemRequest,folderID).getData();
+            userID = jsonObject.getInteger("userID");
+            Problem problem = jsonObject.getObject("problem", Problem.class);
+            List<String> labelList = jsonObject.getObject("labelList", List.class);
+            List<Integer> valueList = jsonObject.getObject("valueList", List.class);
+            Map<Integer, Set<Integer>> objectMap = jsonObject.getObject("objectMap", Map.class);
+            // insert into tables based on objectMap
+            Integer problemID = problemService.addProblem(problem).getData();
+            for (Map.Entry<Integer, Set<Integer>> entry : objectMap.entrySet()) {
+                Integer sourceType = entry.getKey();
+                List<Integer> sourceIDs = new ArrayList<>(entry.getValue());
+                switch (sourceType) {
+                    case 1:
+                        problemService.addCompanies(problemID, sourceIDs);
+                        break;
+                    case 2:
+                        problemService.addDepartments(problemID, sourceIDs);
+                        break;
+                    case 3:
+                        problemService.addPosts(problemID, sourceIDs);
+                        break;
+                }
+            }
+            // insert into problem_category based on labelList and valueList
+            problemService.addCategories(problemID, valueList);
+            for (String label: labelList) {
+                Category category = new Category();
+                category.setCategoryName(label);
+                category.setUserID(userID);
+                Integer categoryID = userService.addCategory(category).getData();
+                problemService.addCategory(problemID, categoryID);
+            }
+            return ResultUtil.success(problemID);
+        }catch (Exception e) {
+            return ResultUtil.error(3, "新增失败");
+        }
+    }
+
+
+
     @PutMapping("/{ProblemID}")
     public Result update(@RequestHeader("Authorization") String token, @RequestBody JSONObject problemRequest) {
         try{
-            JSONObject jsonObject = problemService.processProblemRequest(token, problemRequest).getData();
+            Integer folderID = 1;
+            JSONObject jsonObject = problemService.processProblemRequest(token, problemRequest, folderID).getData();
             Integer userID = jsonObject.getInteger("userID");
             Problem problem = jsonObject.getObject("problem", Problem.class);
             List<String> labelList = jsonObject.getObject("labelList", List.class);
@@ -164,9 +216,14 @@ public class ProblemController {
     }
 
     @PostMapping("/{ProblemID}/codes")
-    public Result addCode(@PathVariable Integer ProblemID, @RequestBody Code code) {
+    public Result addCode(@PathVariable Integer ProblemID, @RequestBody JSONObject jsonObject) {
+        Code code = new Code();
+        code.setCodeText(jsonObject.getString("code"));
+        // 将language转成大写后，用CodeLanguage枚举类获取language的数值
+        code.setCodeLanguage(CodeLanguage.valueOf(jsonObject.getString("language").toUpperCase()).getValue());
         code.setProblemID(ProblemID);
-        return problemService.addCode(code, ProblemID);
+        System.out.println(code);
+        return problemService.addCode(code);
     }
 
     @GetMapping("/{ProblemID}/codes")
@@ -174,15 +231,16 @@ public class ProblemController {
         return problemService.findCodesByProblemID(ProblemID);
     }
 
-    @GetMapping("/{ProblemID}/codes/{CodeID}")
-    public Result<Code> getCode(@PathVariable Integer ProblemID, @PathVariable Integer CodeID) {
+    @GetMapping("/codes/{CodeID}")
+    public Result<Code> getCode(@PathVariable Integer CodeID) {
         return problemService.findCodeByCodeID(CodeID);
     }
 
     @PostMapping("/{ProblemID}/notes")
     public Result addNote(@PathVariable Integer ProblemID, @RequestBody Note note) {
         note.setProblemID(ProblemID);
-        return problemService.addNote(note, ProblemID);
+        System.out.println(note);
+        return problemService.addNote(note);
     }
 
     @GetMapping("/{ProblemID}/notes")
@@ -190,8 +248,9 @@ public class ProblemController {
         return problemService.findNotesByProblemID(ProblemID);
     }
 
-    @GetMapping("/{ProblemID}/notes/{NoteID}")
-    public Result<Note> getNote(@PathVariable Integer ProblemID, @PathVariable Integer NoteID) {
+    @GetMapping("/notes/{NoteID}")
+    public Result<Note> getNote(@PathVariable Integer NoteID) {
+        System.out.println(NoteID);
         return problemService.findNoteByNoteID(NoteID);
     }
 }

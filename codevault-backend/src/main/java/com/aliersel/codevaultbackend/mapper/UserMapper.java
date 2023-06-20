@@ -34,6 +34,12 @@ public interface UserMapper {
     @Options(useGeneratedKeys = true, keyProperty = "categoryID", keyColumn = "category_id")
     void saveCategory(Category category);
 
+    @Update("UPDATE company SET company_name = #{companyName} WHERE company_id = #{companyID}")
+    Boolean updateCompany(Company company);
+
+    @Delete("DELETE FROM company WHERE company_id = #{companyID}")
+    Boolean deleteCompany(Integer companyID);
+
     @Select("SELECT company_id FROM company WHERE company_name = #{companyName} AND user_id = #{userID}")
     Integer findCompanyIDByName(String companyName, Integer userID);
 
@@ -62,7 +68,39 @@ public interface UserMapper {
     })
     Page<ProblemWithTags> findProblemsByUserID(Integer userID);
 
-    @Select("SELECT c.category_id AS id, c.category_name AS name, COALESCE(pc.count, 0) AS count " +
+    @Select("<script> " +
+            "SELECT p.problem_id, p.problem_title, p.problem_type, p.difficulty, p.status, p.last_modified, " +
+            "array_agg(c.category_name) AS tags " +
+            "FROM problem AS p " +
+            "LEFT JOIN problem_category AS pc " +
+            "ON p.problem_id = pc.problem_id " +
+            "LEFT JOIN category AS c " +
+            "ON pc.category_id = c.category_id " +
+            "WHERE p.user_id = #{userID} " +
+            "<if test='type != null'>AND p.problem_type = #{type}</if> " +
+            "<if test='difficulty != null'>AND p.difficulty = #{difficulty}</if> " +
+            "<if test='status != null'>AND p.status = #{status}</if> " +
+            "<if test='tagIDs != null and tagIDs.size() > 0'>AND c.category_id IN " +
+            "<foreach item='item' collection='tagIDs' open='(' separator=',' close=')'> " +
+            "#{item} " +
+            "</foreach> " +
+            "</if> " +
+            "<if test='keyword != null'>AND (to_tsvector('zhcnsearch', p.problem_title || ' ' || p.problem_content) @@ to_tsquery('zhcnsearch', #{keyword}) " +
+            "OR to_tsvector('english', p.problem_title || ' ' || p.problem_content) @@ to_tsquery('english', #{keyword}))</if> " +
+            "GROUP BY p.problem_id" +
+            "</script>")
+    @Results({
+            @Result(property = "problemID", column = "problem_id"),
+            @Result(property = "problemTitle", column = "problem_title"),
+            @Result(property = "problemType", column = "problem_type"),
+            @Result(property = "difficulty", column = "difficulty"),
+            @Result(property = "status", column = "status"),
+            @Result(property = "lastModified", column = "last_modified"),
+            @Result(property = "tags", column = "tags", typeHandler = com.aliersel.codevaultbackend.mapper.type_handler.ArrayTypeHandler.class)
+    })
+    Page<ProblemWithTags> findFilteredProblemsByUserID(Integer userID, Integer type, Integer difficulty, Boolean status, List<Integer> tagIDs, String keyword);
+
+    @Select("SELECT DISTINCT c.category_id AS id, c.category_name AS name, COALESCE(pc.count, 0) AS count " +
             "FROM category AS c " +
             "LEFT JOIN ( " +
             "SELECT category_id, COUNT(problem_id) " +

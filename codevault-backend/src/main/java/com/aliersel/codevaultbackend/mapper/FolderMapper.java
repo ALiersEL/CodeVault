@@ -1,6 +1,7 @@
 package com.aliersel.codevaultbackend.mapper;
 
 import com.aliersel.codevaultbackend.controller.entity.FileWithTypes;
+import com.aliersel.codevaultbackend.entity.Folder;
 import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
@@ -23,26 +24,18 @@ public interface FolderMapper {
             "WHERE problem.user_id = #{userID} AND folder_path = #{folderPath}")
     List<FileWithTypes> findFilesByFolderPath(Integer userID, String folderPath);
 
+    @Select("SELECT * FROM folder WHERE user_id = #{userID} AND parent_folder_id = #{folderID}")
+    List<Folder> findFoldersByFolderID(Integer userID, Integer folderID);
+
     @Insert("INSERT INTO folder (folder_name, folder_path, parent_folder_id, user_id) " +
             "VALUES (#{folderName}, #{folderPath}, (SELECT folder_id FROM folder WHERE folder_path = #{parentPath}), #{userID})")
     Boolean saveFolder(Integer userID, String folderPath, String parentPath, String folderName);
 
 
     // folderID为主键，不同用户不可能有相同的folderID
-    @Delete("BEGIN; " +
-            "WITH RECURSIVE subfolders AS ( " +
-            "SELECT folder_id " +
-            "FROM folder " +
-            "WHERE folder_id = #{folderID} " +
-            "UNION ALL " +
-            "SELECT f.folder_id " +
-            "FROM folder AS f " +
-            "INNER JOIN subfolders AS sf " +
-            "ON f.parent_folder_id = sf.folder_id " +
-            ") " +
-            "DELETE FROM problem " +
-            "WHERE folder_id IN (SELECT folder_id FROM subfolders); " +
-            "DELETE FROM folder WHERE folder_id = #{folderID}; " +
-            "COMMIT; ")
+    @Delete("DELETE FROM folder WHERE folder_id = #{folderID}")
     Boolean deleteFolder(Integer userID, Integer folderID);
+
+    @Select("SELECT folder_id FROM folder WHERE user_id = #{userID} AND folder_path = #{folderPath}")
+    Integer findFolderIDByFolderPath(Integer userID, String folderPath);
 }
