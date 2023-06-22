@@ -9,6 +9,7 @@ import FileTreeModal from "./FileTreeModal.vue";
 import ConfirmModal from "./ConfirmModal.vue";
 import { deleteMapping } from "../api/request";
 
+const promptMessage = ref<string>("");
 type RowData = {
   id: number
   name: string
@@ -37,7 +38,7 @@ const createColumns = (): DataTableColumns<RowData> => [
                     // 现有的路由加上/文件夹名
                     router.push(
                       {
-                        name: "folder",
+                        name: "folders",
                         query: {
                           path: router.currentRoute.value.query.path + "/" + row["name"]
                         }
@@ -74,6 +75,7 @@ const createColumns = (): DataTableColumns<RowData> => [
   {
     title: "类型",
     key: "type",
+    sorter: 'default'
   },
   {
     title: "修改时间",
@@ -99,13 +101,17 @@ const options: DropdownOption[] = [
   }
 ]
 
+const pagination = {
+    pageSize: 10
+}
+
 const showDropdown = ref(false);
 const showFileTreeModal = ref(false);
 const showConfirmModal = ref(false);
 const x = ref(0);
 const y = ref(0);
-// const id = ref(0);
-// const type = ref("");
+const id = ref(0);
+const type = ref("");
 const name = ref("");
 
 const onClickoutside = () => {
@@ -119,6 +125,13 @@ const handleSelect = ( key: string) => {
     showFileTreeModal.value = true;
     console.log('move');
   } else if(key === 'delete') {
+    // 如果checkedRowKeys.value为空, promptMessage.value为"确定要删除type.value name.value的文件吗？"
+    if(checkedRowKeysRef.value.length === 0) {
+      promptMessage.value = `确定要删除${type.value}${name.value}吗？`;
+    } else {
+      // 否则, promptMessage.value为"确定要删除选中的checkedRowKeys.value.length个文件吗？"
+      promptMessage.value = `确定要删除选中的${checkedRowKeysRef.value.length}个文件吗？`;
+    }
     showConfirmModal.value = true;
     console.log('delete');
   }
@@ -134,8 +147,8 @@ const rowProps = (row: RowData) => {
         x.value = e.clientX;
         y.value = e.clientY;
         showDropdown.value = true;
-        // id.value = row.id;
-        // type.value = row.type;
+        id.value = row.id;
+        type.value = row.type;
         name.value = row.name;
       });
     },
@@ -162,6 +175,22 @@ const handleCheck = (keys: DataTableRowKey[]) => {
 const getFolderContent = inject("getFolderContent") as () => void;
 
 const deleteFile = () => {
+  // 如果checkedRowKeys.value为空, 删除id为id.value, type为type.value的文件
+  console.log(checkedRowKeysRef.value);
+  if(checkedRowKeysRef.value.length === 0) {
+    if(type.value === "文件夹") {
+      deleteMapping(`/folders/${id.value}`, {}).then((res) => {
+        console.log(res);
+      });
+    } else {
+      deleteMapping(`/problems/${id.value}`, {}).then((res) => {
+        console.log(res);
+      });
+    }
+    getFolderContent();
+    showConfirmModal.value = false;
+    return;
+  }
   // 从checkedRowKeys.value提取出id和type，删除每一个
   checkedRowKeysRef.value.forEach((key) => {
     key = key as string;
@@ -174,11 +203,12 @@ const deleteFile = () => {
       });
     } else {
       const id = parseInt(key.slice(3));
-      deleteMapping(`/folder/${id}`, {}).then((res) => {
+      deleteMapping(`/folders/${id}`, {}).then((res) => {
         console.log(res);
       });
     }
   });
+  // 重新渲染文件夹内容
   getFolderContent();
   showConfirmModal.value = false;
 };
@@ -196,6 +226,7 @@ const cancelDeleteFile = () => {
       :row-props="rowProps"
       :row-key = "row => row.type + row.id"
       @update-checked-row-keys="handleCheck"
+      :pagination="pagination"
     />
     <n-dropdown
       placement="bottom-start"
@@ -211,7 +242,7 @@ const cancelDeleteFile = () => {
     <n-message-provider>
       <ConfirmModal 
         v-model:showConfirmModal="showConfirmModal"
-        :prompt-message="'确定要删除' + `${checkedRowKeysRef.length}` + '个内容吗？'"
+        :prompt-message="promptMessage"
         @confirmed="deleteFile"
         @canceled="cancelDeleteFile"
       />

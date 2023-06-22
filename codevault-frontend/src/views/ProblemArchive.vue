@@ -8,6 +8,7 @@ import { getMapping } from "../api/request";
 import { ref, onMounted, provide } from "vue";
 import router from "../router";
 import moment from "moment";
+import ProblemModal from "../components/ProblemModal.vue";
 
 type RowData = {
   id: number
@@ -19,7 +20,7 @@ type RowData = {
 const data = ref<RowData[]>([]);
 
 const getFolderContent = () => {
-  getMapping("/folder", { path: router.currentRoute.value.query.path }).then((res) => {
+  getMapping("/folders", { path: router.currentRoute.value.query.path }).then((res) => {
     if (res.status === 200) {
       console.log("success");
       data.value = res.data.data.map((item: any) => {
@@ -55,9 +56,12 @@ onMounted(() => {
     <div>
         <n-space vertical>
             <NavigationPanel />
-            <BreadCrumb />
-            <FolderModal />
-            <FolderTable :data="data"/>
+            <n-space vertical style="margin-left: 50px;margin-right: 50px;margin-top: 20px;">
+              <BreadCrumb />
+              <FolderModal />
+              <ProblemModal />
+              <FolderTable :data="data"/>
+            </n-space>
         </n-space>
     </div>
 </template>

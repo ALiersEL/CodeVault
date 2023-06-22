@@ -46,8 +46,8 @@ const routes: Array<RouteRecordRaw> = [
     meta: { requiresAuth: true },
   },
   {
-    path: "/folder",
-    name: "folder",
+    path: "/folders",
+    name: "folders",
     component: () => import("../views/ProblemArchive.vue"),
     meta: { requiresAuth: true },
   },
@@ -94,7 +94,7 @@ router.beforeEach((to, from, next) => {
   }
   
   //文件夹跳转
-  if(to.name === 'folder'){
+  if(to.name === 'folders'){
     // 如果to.query.path不存在，则将其设置为~
     if(!to.query.path){
       to.query.path = '~';

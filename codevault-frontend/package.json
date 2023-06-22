@@ -11,7 +11,6 @@
   "dependencies": {
     "@types/crypto-js": "^4.1.1",
     "@types/identicon.js": "^2.3.1",
-    "@types/moment": "^2.13.0",
     "@types/splitpanes": "^2.2.1",
     "@vicons/fa": "^0.12.0",
     "@vicons/fluent": "^0.12.0",

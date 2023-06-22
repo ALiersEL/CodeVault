@@ -4,8 +4,8 @@ spring:
       ddl-auto: update
   datasource:
     url: jdbc:postgresql://${POSTGRESQL_HOST:localhost}:5432/code_vault
-    username: jose
-    password: joezhuspostgres
+    username: 
+    password:
     driver-class-name: org.postgresql.Driver
     type: com.alibaba.druid.pool.DruidDataSource
     druid:

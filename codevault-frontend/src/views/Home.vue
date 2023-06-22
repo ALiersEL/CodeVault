@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import NavigationPanel from "../components/NavigationPanel.vue";
+import Carousel from "../components/Carousel.vue";
 </script>
 
 <template>
     <div>
         <NavigationPanel />
-        <p>This is home</p>
+        <Carousel />
     </div>
 </template>
 

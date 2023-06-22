@@ -14,7 +14,7 @@ import java.net.URLDecoder;
 import java.util.List;
 
 @RestController
-@RequestMapping("/folder")
+@RequestMapping("/folders")
 public class FolderController {
     @Autowired
     private JwtTokenProvider jwtTokenProvider;
@@ -22,17 +22,29 @@ public class FolderController {
     private FolderService folderService;
 
     @GetMapping
-    public Result<List<FileWithTypes>> getFolderContent(@RequestHeader("Authorization") String token, @RequestParam(value = "path") String path) {
+    public Result<List<FileWithTypes>> getFolderContent(@RequestHeader("Authorization") String token,
+                                                        @RequestParam(value = "path", required = false ) String path,
+                                                        @RequestParam(value = "folderID", required = false) Integer folderID) {
          try {
              Integer userID = jwtTokenProvider.getUserid(token.split(" ")[1].trim());
-             return folderService.getFilesByFolderPath(userID, path);
+             if (path != null) {
+                 path = URLDecoder.decode(path, "UTF-8");
+                 return folderService.getFilesByFolderPath(userID, path);
+             } else if (folderID != null) {
+                 System.out.println(folderID);
+                 return folderService.getFilesByFolderID(userID, folderID);
+             } else {
+                 return ResultUtil.error(500, "获取失败");
+             }
             } catch (Exception e) {
                 return ResultUtil.error(500, "获取失败");
          }
     }
 
-    @GetMapping
-    public Result<List<Folder>> getFoldersByFolderID(@RequestHeader("Authorization") String token, @RequestParam(value = "folderID") Integer folderID) {
+    // 只获取文件夹
+    @GetMapping("/simple")
+    public Result<List<Folder>> getAllFolderContent(@RequestHeader("Authorization") String token,
+                                                    @RequestParam(value = "folderID", required = true) Integer folderID) {
         try {
             Integer userID = jwtTokenProvider.getUserid(token.split(" ")[1].trim());
             return folderService.getFoldersByFolderID(userID, folderID);

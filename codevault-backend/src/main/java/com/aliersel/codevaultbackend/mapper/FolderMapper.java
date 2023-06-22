@@ -24,11 +24,24 @@ public interface FolderMapper {
             "WHERE problem.user_id = #{userID} AND folder_path = #{folderPath}")
     List<FileWithTypes> findFilesByFolderPath(Integer userID, String folderPath);
 
+    @Select("SELECT f1.folder_id AS id, f1.folder_name AS name, '文件夹' AS type, f1.last_modified " +
+            "FROM folder AS f1 "  +
+            "INNER JOIN folder AS f2 " +
+            "ON f1.parent_folder_id = f2.folder_id " +
+            "WHERE f1.user_id = #{userID} AND f2.folder_id = #{folderID} " +
+            "UNION " +
+            "SELECT problem_id AS id, problem_title AS name, '文件' AS type, problem.last_modified " +
+            "FROM problem " +
+            "INNER JOIN folder " +
+            "ON problem.folder_id = folder.folder_id " +
+            "WHERE problem.user_id = #{userID} AND problem.folder_id = #{folderID}")
+    List<FileWithTypes> findFilesByFolderID(Integer userID, Integer folderID);
+
     @Select("SELECT * FROM folder WHERE user_id = #{userID} AND parent_folder_id = #{folderID}")
     List<Folder> findFoldersByFolderID(Integer userID, Integer folderID);
 
     @Insert("INSERT INTO folder (folder_name, folder_path, parent_folder_id, user_id) " +
-            "VALUES (#{folderName}, #{folderPath}, (SELECT folder_id FROM folder WHERE folder_path = #{parentPath}), #{userID})")
+            "VALUES (#{folderName}, #{folderPath}, (SELECT folder_id FROM folder WHERE user_id = #{userID} AND folder_path = #{parentPath}), #{userID})")
     Boolean saveFolder(Integer userID, String folderPath, String parentPath, String folderName);
 
 

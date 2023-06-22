@@ -9,7 +9,6 @@ import com.aliersel.codevaultbackend.utils.ResultUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.net.Inet4Address;
 import java.util.List;
 
 @Service
@@ -28,6 +27,17 @@ public class FolderServiceImpl implements FolderService {
     }
 
     @Override
+    public Result<List<FileWithTypes>> getFilesByFolderID(Integer userID, Integer folderID) {
+        try {
+            List<FileWithTypes> files = folderMapper.findFilesByFolderID(userID, folderID);
+            return ResultUtil.success(files);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResultUtil.error(500, "获取失败");
+        }
+    }
+
+    @Override
     public Result<List<Folder>> getFoldersByFolderID(Integer userID, Integer folderID) {
         try {
             List<Folder> folders = folderMapper.findFoldersByFolderID(userID, folderID);
@@ -41,7 +51,10 @@ public class FolderServiceImpl implements FolderService {
     public Result addFolderByPath(Integer userID, String parentPath, String folderName) {
         try {
             String folderPath = parentPath + "/" + folderName;
+            System.out.println(userID);
             System.out.println(folderPath);
+            System.out.println(parentPath);
+            System.out.println(folderName);
             return ResultUtil.success(folderMapper.saveFolder(userID, folderPath, parentPath, folderName));
         } catch (Exception e) {
             return ResultUtil.error(500, "添加失败");

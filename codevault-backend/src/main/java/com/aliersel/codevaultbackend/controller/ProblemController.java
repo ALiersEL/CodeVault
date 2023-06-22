@@ -29,55 +29,18 @@ public class ProblemController {
 
     @PostMapping
     // 从header中获取token，从token中获取userID，从requestBody中获取problem
-    public Result add(@RequestHeader("Authorization") String token, @RequestBody JSONObject problemRequest) {
-        try {
-            Integer folderID = 1;
-            JSONObject jsonObject = problemService.processProblemRequest(token, problemRequest,folderID).getData();
-            Integer userID = jsonObject.getInteger("userID");
-            Problem problem = jsonObject.getObject("problem", Problem.class);
-            List<String> labelList = jsonObject.getObject("labelList", List.class);
-            List<Integer> valueList = jsonObject.getObject("valueList", List.class);
-            Map<Integer, Set<Integer>> objectMap = jsonObject.getObject("objectMap", Map.class);
-            // insert into tables based on objectMap
-            Integer problemID = problemService.addProblem(problem).getData();
-            for (Map.Entry<Integer, Set<Integer>> entry : objectMap.entrySet()) {
-                Integer sourceType = entry.getKey();
-                List<Integer> sourceIDs = new ArrayList<>(entry.getValue());
-                switch (sourceType) {
-                    case 1:
-                        problemService.addCompanies(problemID, sourceIDs);
-                        break;
-                    case 2:
-                        problemService.addDepartments(problemID, sourceIDs);
-                        break;
-                    case 3:
-                        problemService.addPosts(problemID, sourceIDs);
-                        break;
-                }
-            }
-            // insert into problem_category based on labelList and valueList
-            problemService.addCategories(problemID, valueList);
-            for (String label: labelList) {
-                Category category = new Category();
-                category.setCategoryName(label);
-                category.setUserID(userID);
-                Integer categoryID = userService.addCategory(category).getData();
-                problemService.addCategory(problemID, categoryID);
-            }
-            return ResultUtil.success(problemID);
-        }catch (Exception e) {
-            return ResultUtil.error(3, "新增失败");
-        }
-    }
-
-    @PostMapping("/folder")
-    public Result addByFolder(@RequestHeader("Authorization") String token, @RequestBody JSONObject problemRequest) {
+    public Result addProblem(@RequestHeader("Authorization") String token, @RequestBody JSONObject problemRequest) {
         try {
             Integer userID = jwtTokenProvider.getUserid(token.split(" ")[1].trim());
-            String folderPath = problemRequest.getString("folderPath");
-            Integer folderID = folderService.getFolderIDByFolderPath(userID, folderPath).getData();
+            // 如果folderPath为空，则默认为根目录，
+            // 否则根据folderPath获取folderID
+            Integer folderID = 1;
+            if (problemRequest.getString("folderPath") != null) {
+                String folderPath = problemRequest.getString("folderPath");
+                folderID = folderService.getFolderIDByFolderPath(userID, folderPath).getData();
+                System.out.println(folderID);
+            }
             JSONObject jsonObject = problemService.processProblemRequest(token, problemRequest,folderID).getData();
-            userID = jsonObject.getInteger("userID");
             Problem problem = jsonObject.getObject("problem", Problem.class);
             List<String> labelList = jsonObject.getObject("labelList", List.class);
             List<Integer> valueList = jsonObject.getObject("valueList", List.class);
@@ -114,10 +77,8 @@ public class ProblemController {
         }
     }
 
-
-
     @PutMapping("/{ProblemID}")
-    public Result update(@RequestHeader("Authorization") String token, @RequestBody JSONObject problemRequest) {
+    public Result updateProblem(@RequestHeader("Authorization") String token, @RequestBody JSONObject problemRequest) {
         try{
             Integer folderID = 1;
             JSONObject jsonObject = problemService.processProblemRequest(token, problemRequest, folderID).getData();
@@ -190,12 +151,12 @@ public class ProblemController {
     }
 
     @GetMapping("/{ProblemID}")
-    public Result get(@PathVariable Integer ProblemID) {
+    public Result getProblem(@PathVariable Integer ProblemID) {
         // 返回Problem, 相关的类别和公司
         try{
             Problem problem = problemService.findByProblemID(ProblemID).getData();
             List<Category> categories = problemService.findCategoriesByProblemID(ProblemID).getData();
-            List<Source> sources = (List<Source>) problemService.findSourcesByProblemID(ProblemID).getData();
+            List<Source> sources = problemService.findSourcesByProblemID(ProblemID).getData();
             JSONObject jsonObject = new JSONObject();
             jsonObject.put("problem", problem);
             jsonObject.put("categories", categories);

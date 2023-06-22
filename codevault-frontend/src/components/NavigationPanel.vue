@@ -20,7 +20,7 @@ const handleSelect = (key: string) => {
     }
     else if(key === "archive") {
         // 重定向到归档题目页面
-        router.push("/folder");
+        router.push("/folders");
     }
 };
 </script>

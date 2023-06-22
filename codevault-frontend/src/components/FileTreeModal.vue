@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { defineEmits, computed } from "vue";
+import { defineEmits, computed, ref } from "vue";
 import {
   NModal,
   NCard,
-  NButton
+  NButton,
+  NSpace,
 }
 from "naive-ui";
 import FileTree from "./FileTree.vue";
@@ -32,8 +33,12 @@ const handleCancel = () => {
   showFileTreeModal.value = false;
 };
 
+const currentFolderID = ref<number>(-1);
+
 // handleSubmit
-const handleSubmit = () => {
+const handleSubmit = (folderID: number) => {
+  console.log(folderID);
+  
   showFileTreeModal.value = false;
 };
 </script>
@@ -50,14 +55,16 @@ const handleSubmit = () => {
                 closable 
                 @close="handleClose"
             >
-            <FileTree />
+            <FileTree v-model:currentFolderID="currentFolderID" />
             <div style="display: flex; justify-content: flex-end;">
-              <n-button round attr-type="button" @click="handleCancel">
-                取消
-              </n-button>
-              <n-button round attr-type="submit" @click="handleSubmit">
-                提交
-              </n-button>
+              <n-space>
+                <n-button round attr-type="button" @click="handleCancel">
+                  取消
+                </n-button>
+                <n-button round attr-type="submit" @click="handleSubmit(currentFolderID)">
+                  移动
+                </n-button>
+              </n-space>
             </div>
             </n-card>
         </n-modal>

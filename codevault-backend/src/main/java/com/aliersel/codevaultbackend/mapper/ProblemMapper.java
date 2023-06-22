@@ -9,8 +9,8 @@ import java.util.List;
 @Mapper
 public interface ProblemMapper {
     @Insert("INSERT INTO problem " +
-            "(problem_title,problem_content,problem_type,difficulty,status,mastery,user_id) " +
-            "VALUES(#{problemTitle}, #{problemContent}, #{problemType}, #{difficulty}, #{status}, #{mastery}, #{userID}) " +
+            "(problem_title,problem_content,problem_type,difficulty,status,mastery,user_id,folder_id) " +
+            "VALUES(#{problemTitle}, #{problemContent}, #{problemType}, #{difficulty}, #{status}, #{mastery}, #{userID}, #{folderID}) " +
             "RETURNING problem_id")
     @Options(useGeneratedKeys = true, keyProperty = "problemID", keyColumn = "problem_id")
     void saveProblem(Problem problem);
