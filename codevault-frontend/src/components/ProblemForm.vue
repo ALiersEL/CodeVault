@@ -23,6 +23,7 @@ import { Add } from "@vicons/ionicons5";
 import { QuillEditor } from "@vueup/vue-quill";
 import "@vueup/vue-quill/dist/vue-quill.snow.css";
 import { postMapping, getMapping } from "../api/request";
+import router from "../router";
 
 const formRef = ref<VNodeRef | null>(null);
 
@@ -49,7 +50,8 @@ type problemType = {
   mastery: number,
   status: boolean,
   tags: option[],
-  sources: source[];
+  sources: source[],
+  folderPath: string | null,
 };
 
 const problem = reactive<problemType>({
@@ -73,7 +75,9 @@ const problem = reactive<problemType>({
       postName: null,
       postID: null,
     },
-  }] as source[]
+  }] as source[],
+  // 如果router.currentRoute.value.query.path存在，就将其赋值给folderPath, 否则folderPath为null
+  folderPath: router.currentRoute.value.query.path ? router.currentRoute.value.query.path as string : null,
 });
 
 // 只要problem.tags中的tagName, 根据problem.tags动态改变

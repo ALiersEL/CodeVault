@@ -449,12 +449,14 @@ const handleCancel = () => {
         </n-form-item>
 
         <div style="display: flex; justify-content: flex-end;">
-          <n-button round attr-type="button" @click="handleCancel">
-            取消
-          </n-button>
-          <n-button round attr-type="submit" @click="handleSubmit">
-            修改
-          </n-button>
+          <n-space>
+            <n-button round attr-type="button" @click="handleCancel">
+              取消
+            </n-button>
+            <n-button round attr-type="submit" @click="handleSubmit">
+              修改
+            </n-button>
+          </n-space>
         </div>
       </n-form>
     </n-space>

@@ -21,12 +21,12 @@ const handleRedirect = (index: number) => {
   const path = breadcrumbList.value.slice(0, index + 1).join("/");
   console.log(path);
   router.push({
-    name: "folder",
+    name: "folders",
     query: {
       path: path
     },
   });
-  breadcrumbList.value = path;
+  breadcrumbList.value = breadcrumbList.value.slice(0, index + 1);
 };
 </script>
 

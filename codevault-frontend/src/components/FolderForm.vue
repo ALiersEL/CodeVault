@@ -59,7 +59,7 @@ const handleSubmit = (e: MouseEvent) => {
 
     const folderPath = router.currentRoute.value.query.path;
     // console.log("提交" + folderPath);
-    postMapping("/folder", { parentPath: folderPath, folderName: folder.name }).then((res) => {
+    postMapping("/folders", { parentPath: folderPath, folderName: folder.name }).then((res) => {
         if (res.status === 200) {
             console.log("success");
             // inject getFolderContent function from parent
@@ -88,12 +88,14 @@ const handleSubmit = (e: MouseEvent) => {
                 <n-input v-model:value="folder.name" placeholder="文件夹名称" autofocus style="width: 500px;" @keydown.enter.prevent />
             </n-form-item>
             <div style="display: flex; justify-content: flex-end">
-                <n-button round attr-type="button" @click="handleCancel">
-                    取消
-                </n-button>
-                <n-button round attr-type="submit" @click="handleSubmit">
-                    创建
-                </n-button>
+                <n-space>
+                    <n-button round attr-type="button" @click="handleCancel">
+                        取消
+                    </n-button>
+                    <n-button round attr-type="submit" @click="handleSubmit">
+                        创建
+                    </n-button>
+                </n-space>
             </div>
         </n-form>
     </n-space>
