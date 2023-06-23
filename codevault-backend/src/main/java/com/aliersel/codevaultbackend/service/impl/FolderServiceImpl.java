@@ -22,6 +22,7 @@ public class FolderServiceImpl implements FolderService {
             List<FileWithTypes> files = folderMapper.findFilesByFolderPath(userID, folderPath);
             return ResultUtil.success(files);
         } catch (Exception e) {
+            e.printStackTrace();
             return ResultUtil.error(500, "获取失败");
         }
     }
@@ -43,6 +44,7 @@ public class FolderServiceImpl implements FolderService {
             List<Folder> folders = folderMapper.findFoldersByFolderID(userID, folderID);
             return ResultUtil.success(folders);
         } catch (Exception e) {
+            e.printStackTrace();
             return ResultUtil.error(500, "获取失败");
         }
     }
@@ -57,6 +59,7 @@ public class FolderServiceImpl implements FolderService {
             System.out.println(folderName);
             return ResultUtil.success(folderMapper.saveFolder(userID, folderPath, parentPath, folderName));
         } catch (Exception e) {
+            e.printStackTrace();
             return ResultUtil.error(500, "添加失败");
         }
     }
@@ -67,6 +70,7 @@ public class FolderServiceImpl implements FolderService {
             folderMapper.deleteFolder(userID, folderID);
             return ResultUtil.success();
         } catch (Exception e) {
+            e.printStackTrace();
             return ResultUtil.error(500, "删除失败");
         }
     }
@@ -76,7 +80,30 @@ public class FolderServiceImpl implements FolderService {
         try {
             return ResultUtil.success(folderMapper.findFolderIDByFolderPath(userID, folderPath));
         } catch (Exception e) {
+            e.printStackTrace();
             return ResultUtil.error(500, "查找失败");
+        }
+    }
+
+    @Override
+    public Result renameFolder(Integer folderID, String newName) {
+        try {
+            folderMapper.updateFolderName(folderID, newName);
+            return ResultUtil.success();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResultUtil.error(500, "重命名失败");
+        }
+    }
+
+    @Override
+    public Result moveFolder(Integer folderID, Integer targetFolderID) {
+        try {
+            folderMapper.updateFolderParent(folderID, targetFolderID);
+            return ResultUtil.success();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResultUtil.error(500, "移动失败");
         }
     }
 }

@@ -3,24 +3,28 @@ import { NCarousel } from "naive-ui";
 </script>
 
 <template>
-  <n-carousel trigger="hover">
-    <img
-      class="carousel-img"
-      src="https://naive-ui.oss-cn-beijing.aliyuncs.com/carousel-img/carousel1.jpeg"
-    >
-    <img
-      class="carousel-img"
-      src="https://naive-ui.oss-cn-beijing.aliyuncs.com/carousel-img/carousel2.jpeg"
-    >
-    <img
-      class="carousel-img"
-      src="https://naive-ui.oss-cn-beijing.aliyuncs.com/carousel-img/carousel3.jpeg"
-    >
-    <img
-      class="carousel-img"
-      src="https://naive-ui.oss-cn-beijing.aliyuncs.com/carousel-img/carousel4.jpeg"
-    >
-  </n-carousel>
+  <div>
+    <n-carousel trigger="hover" 
+               :autoplay=true
+     >
+      <!-- 循环五张图，路径为../assets/wallhaven-i.jpg -->
+      <img class="carousel-img" 
+           src="../assets/wallhaven-1.jpg"
+      />
+      <img class="carousel-img" 
+           src="../assets/wallhaven-2.jpg"
+      />
+      <img class="carousel-img" 
+           src="../assets/wallhaven-3.jpg"
+      />
+      <img class="carousel-img" 
+           src="../assets/wallhaven-4.jpg"
+      />
+      <img class="carousel-img" 
+           src="../assets/wallhaven-5.jpg"
+      />
+    </n-carousel>
+  </div>
 </template>
 
 <style scoped>

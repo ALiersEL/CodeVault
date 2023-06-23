@@ -56,15 +56,15 @@ const login = () => {
 
       <div class="right">
         <form class="content" @submit.prevent="login">
-          <h2>Log In</h2>
+          <h2>登 录</h2>
 
           <div class="box">
-            <div>Username</div>
+            <div>用户名</div>
             <input type="text" v-model="username" required autofocus />
           </div>
 
           <div class="box">
-            <div>Password</div>
+            <div>密码</div>
             <div class="input-wrapper">
               <input :type="isVisible ? 'text' : 'password'" v-model="password" required/>
               <div v-if="isVisible" class="eye" @click="togglePassword">
@@ -80,17 +80,17 @@ const login = () => {
           <div class="extra-feature">
             <div class="left-extra">
               <input type="checkbox" name="keepLoggedIn" id="keepLoggedIn">
-              <label for="keepLoggedIn">&nbsp Keep me logged in</label>
+              <label for="keepLoggedIn">&nbsp 保持登录状态</label>
             </div>
 
             <div class="right-extra">
-              <a href="#">Forgot password?</a>
+              <a href="#">忘记密码？</a>
             </div>
             
           </div>
 
-          <button type="submit">Log In</button>
-          <div class="sign-up">Become a member <router-link to="/register">Join CodeVault</router-link></div>
+          <button type="submit">登 录</button>
+          <div class="sign-up">成为我们的一员 <router-link to="/register">加入CodeVault</router-link></div>
         </form>
       </div>
     </div>

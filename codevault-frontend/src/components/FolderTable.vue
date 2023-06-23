@@ -102,7 +102,7 @@ const options: DropdownOption[] = [
 ]
 
 const pagination = {
-    pageSize: 10
+    pageSize: 12,
 }
 
 const showDropdown = ref(false);
@@ -127,7 +127,7 @@ const handleSelect = ( key: string) => {
   } else if(key === 'delete') {
     // 如果checkedRowKeys.value为空, promptMessage.value为"确定要删除type.value name.value的文件吗？"
     if(checkedRowKeysRef.value.length === 0) {
-      promptMessage.value = `确定要删除${type.value}${name.value}吗？`;
+      promptMessage.value = `确定要删除${type.value} ${name.value} 吗？`;
     } else {
       // 否则, promptMessage.value为"确定要删除选中的checkedRowKeys.value.length个文件吗？"
       promptMessage.value = `确定要删除选中的${checkedRowKeysRef.value.length}个文件吗？`;
@@ -238,7 +238,13 @@ const cancelDeleteFile = () => {
       :on-clickoutside="onClickoutside"
       @select="handleSelect($event)"
     />
-    <FileTreeModal v-model:showFileTreeModal="showFileTreeModal"/>
+    <FileTreeModal 
+        v-model:showFileTreeModal="showFileTreeModal"
+        :id="id"
+        :type="type"
+        :name="name"
+        :checkedRowKeys="checkedRowKeysRef"
+    />
     <n-message-provider>
       <ConfirmModal 
         v-model:showConfirmModal="showConfirmModal"

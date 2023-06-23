@@ -50,8 +50,8 @@ const nodeProps = ({ option }: { option: TreeOption }) => {
         onClick () {
             // 点击文件夹，获取文件夹下的文件
             // 转换成number类型
-            currentFolderID.value = Number(option.key);
-            getFolders(Number(option.key)).then(res => {
+            currentFolderID.value = option.key as number;
+            getFolders(currentFolderID.value).then(res => {
                 if (res === 0) {
                     // 没有文件夹，不展开
                     option.expanded = false;
@@ -129,28 +129,19 @@ const getFolders = async (folderID: number): Promise<number> => {
 
 
 onMounted(() => {
-    // 获取文件夹, requestParams为folderID
-    getMapping("/folders/simple", {folderID: 1}).then(res => {
-        if (res.data.code === 200) {
-            // folderID对应key, folderName对应label，prefix为图标
-            data.value = res.data.data.map((item: any) => {
-                return {
-                    key: item.folderID,
-                    label: item.folderName,
-                    prefix: () =>
-                        h(NIcon, null, {
-                        default: () => h(Folder),
-                        }),
-                    children: []
-                }
-            })
-            // 对于每个文件夹，获取其children
-            Promise.all(data.value.map((child: any) => getFolders(child.key)));
-        }
-        else {
-            console.log(res.data.msg);
-        }
-    })
+    // 初始化文件树, 只有根文件夹
+    data.value = [
+        {
+            key: 1,
+            label: "~",
+            prefix: () => h(NIcon, null, {
+                default: () => h(FolderOpenOutline),
+            }),
+            children: [],
+        },
+    ];
+    // 获取根文件夹下的文件夹
+    getFolders(1);
 });
 </script>
 

@@ -2,10 +2,7 @@ package com.aliersel.codevaultbackend.mapper;
 
 import com.aliersel.codevaultbackend.controller.entity.FileWithTypes;
 import com.aliersel.codevaultbackend.entity.Folder;
-import org.apache.ibatis.annotations.Delete;
-import org.apache.ibatis.annotations.Insert;
-import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.*;
 
 import java.util.List;
 
@@ -51,4 +48,10 @@ public interface FolderMapper {
 
     @Select("SELECT folder_id FROM folder WHERE user_id = #{userID} AND folder_path = #{folderPath}")
     Integer findFolderIDByFolderPath(Integer userID, String folderPath);
+
+    @Update("UPDATE folder SET folder_name = #{newName} WHERE folder_id = #{folderID}")
+    Boolean updateFolderName(Integer folderID, String newName);
+
+    @Update("UPDATE folder SET parent_folder_id = #{targetFolderID} WHERE folder_id = #{folderID}")
+    Boolean updateFolderParent(Integer folderID, Integer targetFolderID);
 }

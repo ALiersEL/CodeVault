@@ -373,7 +373,7 @@ const handleCancel = () => {
                 :options="autoFillTagOptions"
                 placeholder="类别"
                 :clear-after-select="true"
-                @select="selectTag(String($event))"
+                @select="selectTag($event as string)"
                 @blur="deactivate"
               />
             </template>

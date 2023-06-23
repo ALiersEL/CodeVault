@@ -451,4 +451,26 @@ public class ProblemServiceImpl implements ProblemService {
             return ResultUtil.error(500, "查询失败");
         }
     }
+
+    @Override
+    public Result renameProblem(Integer problemID, String newName) {
+        try {
+            problemMapper.updateProblemName(problemID, newName);
+            return ResultUtil.success();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResultUtil.error(500, "重命名失败");
+        }
+    }
+
+    @Override
+    public Result moveProblem(Integer problemID, Integer targetFolderID) {
+        try {
+            problemMapper.updateProblemFolder(problemID, targetFolderID);
+            return ResultUtil.success();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResultUtil.error(500, "移动失败");
+        }
+    }
 }
