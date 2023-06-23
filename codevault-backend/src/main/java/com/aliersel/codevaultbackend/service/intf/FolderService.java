@@ -14,4 +14,6 @@ public interface FolderService {
     Result addFolderByPath(Integer userID, String parentPath, String folderName);
     Result deleteFolder(Integer userID, Integer folderID);
     Result<Integer> getFolderIDByFolderPath(Integer userID, String folderPath);
+    Result renameFolder(Integer folderID, String newName);
+    Result moveFolder(Integer folderID, Integer targetFolderID);
 }

@@ -214,4 +214,16 @@ public class ProblemController {
         System.out.println(NoteID);
         return problemService.findNoteByNoteID(NoteID);
     }
+
+    @PutMapping("/{ProblemID}/name")
+    public Result renameProblem(@PathVariable Integer ProblemID, @RequestBody JSONObject jsonObject) {
+        String newName = jsonObject.getString("newName");
+        return problemService.renameProblem(ProblemID, newName);
+    }
+
+    @PostMapping("/{ProblemID}/move")
+    public Result moveProblem(@PathVariable Integer ProblemID, @RequestBody JSONObject jsonObject) {
+        Integer targetFolderID = jsonObject.getInteger("targetFolderID");
+        return problemService.moveProblem(ProblemID, targetFolderID);
+    }
 }

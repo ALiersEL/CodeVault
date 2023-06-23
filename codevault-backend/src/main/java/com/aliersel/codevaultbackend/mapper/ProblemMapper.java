@@ -143,4 +143,14 @@ public interface ProblemMapper {
             "FROM note " +
             "WHERE note_id = #{noteID}")
     Note findNoteByNoteID(Integer noteID);
+
+    @Update("UPDATE problem " +
+            "SET problem_title = #{newName} " +
+            "WHERE problem_id = #{problemID}")
+    Boolean updateProblemName(Integer problemID, String newName);
+
+    @Update("UPDATE problem " +
+            "SET folder_id = #{targetfolderID} " +
+            "WHERE problem_id = #{problemID}")
+    Boolean updateProblemFolder(Integer problemID, Integer targetfolderID);
 }

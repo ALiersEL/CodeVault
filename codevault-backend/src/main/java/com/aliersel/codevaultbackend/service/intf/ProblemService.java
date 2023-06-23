@@ -37,4 +37,6 @@ public interface ProblemService {
     Result addNote(Note note);
     Result findNotesByProblemID(Integer problemID);
     Result findNoteByNoteID(Integer noteID);
+    Result renameProblem(Integer problemID, String newName);
+    Result moveProblem(Integer problemID, Integer targetFolderID);
 }

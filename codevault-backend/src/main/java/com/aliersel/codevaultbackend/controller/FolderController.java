@@ -75,4 +75,23 @@ public class FolderController {
         }
     }
 
+    @PutMapping("/{folderID}/name")
+    public Result renameFolder(@PathVariable("folderID") Integer folderID, @RequestBody JSONObject jsonObject) {
+        try {
+            String newName = jsonObject.getString("newName");
+            return folderService.renameFolder(folderID, newName);
+        } catch (Exception e) {
+            return ResultUtil.error(500, "重命名失败");
+        }
+    }
+
+    @PostMapping("/{folderID}/move")
+    public Result moveFolder(@PathVariable("folderID") Integer folderID, @RequestBody JSONObject jsonObject) {
+        try {
+            Integer targetFolderID = jsonObject.getInteger("targetFolderID");
+            return folderService.moveFolder(folderID, targetFolderID);
+        } catch (Exception e) {
+            return ResultUtil.error(500, "移动失败");
+        }
+    }
 }

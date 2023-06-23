@@ -59,15 +59,15 @@ const register = () => {
 
       <div class="right">
         <form class="content" @submit.prevent="register">
-          <h2>Join CodeVault</h2>
+          <h2>加入 CodeVault</h2>
 
           <div class="box">
-            <div>Username</div>
+            <div>用户名</div>
             <input type="text" v-model="username" required />
           </div>
 
           <div class="box">
-            <div>Password</div>
+            <div>密码</div>
             <div class="input-wrapper">
               <input
                 :type="isVisible ? 'text' : 'password'"
@@ -84,18 +84,18 @@ const register = () => {
           </div>
 
           <div class="box">
-            <div>Email</div>
+            <div>电子邮箱</div>
             <input type="email" v-model="email" required />
           </div>
 
           <div class="box">
-            <div>Phone number</div>
+            <div>手机号</div>
             <input type="tel" v-model="phoneNumber" />
           </div>
 
-          <button type="submit">Sign Up</button>
+          <button type="submit">注 册</button>
           <p class="log-in">
-            Already a member? <router-link to="/login">Log In</router-link>
+            已经有账号了？ <router-link to="/login">登录</router-link>
           </p>
         </form>
       </div>

@@ -33,7 +33,7 @@ const handleSelect = (key: string) => {
         <router-link to="/" 
                     class="navigation-link" 
                     active-class="navigation-link-active"
-                    >Home
+                    >首页
         </router-link>
         <router-link to="/problemset" 
                     class="navigation-link" 
@@ -42,16 +42,16 @@ const handleSelect = (key: string) => {
                         size="huge"
                         :options="options" 
                         @select="handleSelect">
-                Problemset
+                题库
             </n-dropdown>
         </router-link>
         <router-link to="/me" 
                     class="navigation-link" 
-                    active-class="navigation-link-active">Me
+                    active-class="navigation-link-active">个人中心
         </router-link>
         <router-link to="/about" 
                     class="navigation-link" 
-                    active-class="navigation-link-active">About
+                    active-class="navigation-link-active">关于
         </router-link>
         <AvatarDropdown class="avatar" />
     </div>
