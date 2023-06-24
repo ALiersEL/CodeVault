@@ -1,17 +1,16 @@
 CREATE TABLE "user" (
     user_id SERIAL PRIMARY KEY,
     user_name VARCHAR(50) NOT NULL UNIQUE,
-    password_hash VARCHAR(100) NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
     role SMALLINT NOT NULL DEFAULT 1,
     date_registered TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     phone_number VARCHAR(20),
-    email VARCHAR(50),
-    ac_easy INTEGER NOT NULL DEFAULT 0,
-    ac_medium INTEGER NOT NULL DEFAULT 0,
-    ac_hard INTEGER NOT NULL DEFAULT 0,
-    total_easy INTEGER NOT NULL DEFAULT 0,
-    total_medium INTEGER NOT NULL DEFAULT 0,
-    total_hard INTEGER NOT NULL DEFAULT 0
+    email VARCHAR(50) NOT NULL,
+    avatar VARCHAR(255),
+    description TEXT,
+    last_login TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    last_modified TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    is_email_verified BOOLEAN NOT NULL DEFAULT FALSE
 );
 
 CREATE TABLE folder (
@@ -54,7 +53,7 @@ CREATE TABLE post (
 
 CREATE TABLE problem (
     problem_id SERIAL PRIMARY KEY,
-    problem_title VARCHAR(100) NOT NULL,
+    problem_title VARCHAR(255) NOT NULL,
     problem_content TEXT NOT NULL,
     problem_type SMALLINT,
     difficulty SMALLINT,
@@ -184,50 +183,11 @@ BEFORE UPDATE ON code
 FOR EACH ROW
 EXECUTE FUNCTION update_last_modified();
 
-
--- 新增题目时，更新题目总数
-CREATE OR REPLACE FUNCTION update_total()
-RETURNS TRIGGER AS $$
-BEGIN
-    IF NEW.problem_type = 1 THEN
-        UPDATE "user" SET total_easy = total_easy + 1 WHERE user_id = NEW.user_id;
-    ELSIF NEW.problem_type = 2 THEN
-        UPDATE "user" SET total_medium = total_medium + 1 WHERE user_id = NEW.user_id;
-    ELSIF NEW.problem_type = 3 THEN
-        UPDATE "user" SET total_hard = total_hard + 1 WHERE user_id = NEW.user_id;
-    END IF;
-    RETURN NULL;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE TRIGGER update_total_trigger
-AFTER INSERT ON problem
-FOR EACH ROW
-EXECUTE FUNCTION update_total();
-
-
--- 删除题目时，更新题目总数
-CREATE OR REPLACE FUNCTION update_total_delete()
-RETURNS TRIGGER AS $$
-BEGIN
-    IF OLD.problem_type = 1 THEN
-        UPDATE "user" SET total_easy = total_easy - 1 WHERE user_id = OLD.user_id;
-    ELSIF OLD.problem_type = 2 THEN
-        UPDATE "user" SET total_medium = total_medium - 1 WHERE user_id = OLD.user_id;
-    ELSIF OLD.problem_type = 3 THEN
-        UPDATE "user" SET total_hard = total_hard - 1 WHERE user_id = OLD.user_id;
-    END IF;
-    RETURN NULL;
-END;
-$$ LANGUAGE plpgsql;
-
-
-CREATE TRIGGER update_total_delete_trigger
-BEFORE DELETE ON problem
-FOR EACH ROW
-EXECUTE FUNCTION update_total_delete();
-
 -- 全文关键词匹配
 CREATE INDEX idx_problem_en_fulltext ON problem USING gin(to_tsvector('english', problem_title || ' ' || problem_content));
 CREATE INDEX idx_problem_cn_fulltext ON problem USING gin(to_tsvector('zhcnsearch', problem_title || ' ' || problem_content));
 
+-- problem，category和company表上建立索引
+CREATE INDEX idx_problem_user_id ON problem (user_id);
+CREATE INDEX idx_category_user_id ON category (user_id);
+CREATE INDEX idx_company_user_id ON company (user_id);

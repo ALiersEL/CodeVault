@@ -31,7 +31,7 @@ const handleClose = () => {
         closable 
         @close="handleClose"
       >
-       <ProblemFrom />
+       <ProblemFrom @handleClose="handleClose"/>
       </n-card>
     </n-modal>
   </div>

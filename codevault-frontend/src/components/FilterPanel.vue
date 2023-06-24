@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { NSpace, NSelect, NInput, NIcon } from "naive-ui";
-import MdSearch from "@vicons/ionicons4/MdSearch";
 import Flash16Regular from "@vicons/fluent/Flash16Regular"
 import FlashCheckmark16Regular from "@vicons/fluent/FlashCheckmark16Regular";
 import { FlashOutline } from '@vicons/ionicons5'
@@ -8,7 +7,6 @@ import { ref, onBeforeMount } from "vue";
 import { getMapping } from "../api/request";
 import emitter from "../utils/bus";
 
-// ref 
 const showType = ref(false)
 const showDifficulty = ref(false)
 const showStatus = ref(false)
@@ -83,7 +81,6 @@ const getTags = () => {
       res.data.data.forEach((tag: { name: string; id: number }) => {
         tagOptions.value.push({ label: tag.name, value: tag.id.toString() });
       });
-      console.log(tagOptions);
   })
   .catch((err) => {
     console.log(err);

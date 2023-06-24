@@ -120,12 +120,14 @@ onMounted(() => {
         </n-space>
         </n-descriptions-item>
         <n-descriptions-item label="标签">
-          <div v-for="tag in problem.tags">
-              <!-- 如果有标签，则显示标签 -->
-              <n-tag v-if="tag.label" :bordered="false" type="success"> {{ tag.label }} </n-tag>
-              <!-- 否则显示无标签 -->
-              {{ !tag.label ? "无标签" : ""  }}
-          </div>
+          <n-space>
+            <div v-for="tag in problem.tags">
+                <!-- 如果有标签，则显示标签 -->
+                <n-tag v-if="tag.label" :bordered="false" type="success"> {{ tag.label }} </n-tag>
+                <!-- 否则显示无标签 -->
+                {{ !tag.label ? "无标签" : ""  }}
+            </div>
+          </n-space>
         </n-descriptions-item>
         <n-descriptions-item label="相关企业">
           <n-space>

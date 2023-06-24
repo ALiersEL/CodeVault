@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { NForm, NFormItem, NInput, NButton, NSpace, FormRules } from "naive-ui";
-import { reactive, ref, defineEmits, VNodeRef, inject } from "vue";
+import { reactive, ref, VNodeRef, inject } from "vue";
 import { postMapping } from "../api/request";
 import router from "../router";
 

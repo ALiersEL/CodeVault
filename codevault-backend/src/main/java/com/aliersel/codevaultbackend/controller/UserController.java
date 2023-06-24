@@ -2,14 +2,13 @@ package com.aliersel.codevaultbackend.controller;
 
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
-import com.aliersel.codevaultbackend.controller.entity.CompanyWithCounts;
+import com.aliersel.codevaultbackend.controller.api.CompanyWithCounts;
 import com.aliersel.codevaultbackend.entity.Company;
 import com.aliersel.codevaultbackend.entity.User;
 import com.aliersel.codevaultbackend.security.JwtTokenProvider;
 import com.aliersel.codevaultbackend.service.intf.UserService;
 import com.aliersel.codevaultbackend.utils.Result;
 import com.aliersel.codevaultbackend.utils.ResultUtil;
-import com.github.pagehelper.PageHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -39,11 +38,31 @@ public class UserController {
     }
 
     @GetMapping("/problemset")
-    public Result getProblems(@RequestHeader("Authorization") String token, @RequestParam(defaultValue = "1") int pageNo, @RequestParam(defaultValue = "10") int pageSize) {
+    public Result getProblems(
+            @RequestHeader("Authorization") String token,
+            @RequestParam Integer page,
+            @RequestParam(defaultValue = "10") Integer pageSize,
+            @RequestParam Integer problemTitleSort,
+            @RequestParam Integer difficultySort,
+            @RequestParam Integer masterySort,
+            @RequestParam Integer lastModifiedSort
+    ) {
         try {
             Integer userID = jwtTokenProvider.getUserid(token.split(" ")[1].trim());
-            PageHelper.startPage(pageNo, pageSize);
-            return userService.getProblemsByUserID(userID);
+            Integer offset = (page - 1) * pageSize;
+            return userService.getProblemsByUserID(userID, problemTitleSort, difficultySort, masterySort, lastModifiedSort, offset, pageSize);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResultUtil.error(500, "服务器内部错误");
+        }
+    }
+
+    // 获取用户的题目总数
+    @GetMapping("/problemset/count")
+    public Result<Integer> getProblemCount(@RequestHeader("Authorization") String token) {
+        try {
+            Integer userID = jwtTokenProvider.getUserid(token.split(" ")[1].trim());
+            return userService.getProblemCountByUserID(userID);
         } catch (Exception e) {
             e.printStackTrace();
             return ResultUtil.error(500, "服务器内部错误");
@@ -62,7 +81,14 @@ public class UserController {
             JSONArray selectedTags = jsonObject.getJSONArray("selectedTags");
             List<Integer> tagIDs = selectedTags == null ? null : selectedTags.toJavaList(Integer.class);
             String keyword = jsonObject.getString("searchKey");
-            return ResultUtil.success(userService.getFilteredProblemsByUserID(userID, type, difficulty, status, tagIDs, keyword));
+            Integer problemTitleSort = jsonObject.getInteger("problemTitleSort");
+            Integer difficultySort = jsonObject.getInteger("difficultySort");
+            Integer masterySort = jsonObject.getInteger("masterySort");
+            Integer lastModifiedSort = jsonObject.getInteger("lastModifiedSort");
+            Integer page = jsonObject.getInteger("page");
+            Integer pageSize = jsonObject.getInteger("pageSize");
+            Integer offset = (page - 1) * pageSize;
+            return ResultUtil.success(userService.getFilteredProblemsByUserID(userID, type, difficulty, status, tagIDs, keyword, problemTitleSort, difficultySort, masterySort, lastModifiedSort, offset, pageSize));
         } catch (Exception e) {
             e.printStackTrace();
             return ResultUtil.error(500, "服务器内部错误");

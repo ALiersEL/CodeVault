@@ -1,9 +1,8 @@
 package com.aliersel.codevaultbackend.mapper;
 
-import com.aliersel.codevaultbackend.controller.entity.CategoryWithCounts;
-import com.aliersel.codevaultbackend.controller.entity.ProblemWithTags;
+import com.aliersel.codevaultbackend.controller.api.CategoryWithCounts;
+import com.aliersel.codevaultbackend.controller.api.ProblemWithTags;
 import com.aliersel.codevaultbackend.entity.*;
-import com.github.pagehelper.Page;
 import org.apache.ibatis.annotations.*;
 
 import java.util.List;
@@ -49,14 +48,30 @@ public interface UserMapper {
     @Select("SELECT problem_id FROM problem WHERE user_id = #{userID}")
     List<Integer> findProblemIDsByUserID(Integer userID);
 
-    @Select("SELECT p.problem_id, p.problem_title, p.problem_type, p.difficulty, p.status, p.last_modified, array_agg(c.category_name) AS tags " +
+    @Select("SELECT COUNT(1) FROM problem WHERE user_id = #{userID}")
+    Integer countProblemsByUserID(Integer userID);
+
+    // 0: 无序，1：升序，2：降序
+    @Select("<script> " +
+            "SELECT p.problem_id, p.problem_title, p.problem_type, p.difficulty, p.status, p.last_modified, array_agg(c.category_name) AS tags, p.mastery " +
             "FROM problem AS p " +
             "LEFT JOIN problem_category AS pc " +
             "ON p.problem_id = pc.problem_id " +
             "LEFT JOIN category AS c " +
             "ON pc.category_id = c.category_id " +
             "WHERE p.user_id = #{userID} " +
-            "GROUP BY p.problem_id")
+            "GROUP BY p.problem_id " +
+            "<if test='problemTitleSort == 1'>ORDER BY p.problem_title ASC</if> " +
+            "<if test='problemTitleSort == 2'>ORDER BY p.problem_title DESC</if> " +
+            "<if test='difficultySort == 1'>ORDER BY p.difficulty ASC</if> " +
+            "<if test='difficultySort == 2'>ORDER BY p.difficulty DESC</if> " +
+            "<if test='masterySort == 1'>ORDER BY p.mastery ASC</if> " +
+            "<if test='masterySort == 2'>ORDER BY p.mastery DESC</if> " +
+            "<if test='lastModifiedSort == 1'>ORDER BY p.last_modified ASC</if> " +
+            "<if test='lastModifiedSort == 2'>ORDER BY p.last_modified DESC</if> " +
+            "LIMIT #{pageSize} OFFSET #{offset} " +
+            "</script>"
+    )
     @Results({
             @Result(property = "problemID", column = "problem_id"),
             @Result(property = "problemTitle", column = "problem_title"),
@@ -64,13 +79,14 @@ public interface UserMapper {
             @Result(property = "difficulty", column = "difficulty"),
             @Result(property = "status", column = "status"),
             @Result(property = "lastModified", column = "last_modified"),
-            @Result(property = "tags", column = "tags", typeHandler = com.aliersel.codevaultbackend.mapper.type_handler.ArrayTypeHandler.class)
+            @Result(property = "tags", column = "tags", typeHandler = com.aliersel.codevaultbackend.mapper.type_handler.ArrayTypeHandler.class),
+            @Result(property = "mastery", column = "mastery")
     })
-    Page<ProblemWithTags> findProblemsByUserID(Integer userID);
+    List<ProblemWithTags> findProblemsByUserID(Integer userID, Integer problemTitleSort, Integer difficultySort, Integer masterySort, Integer lastModifiedSort, Integer offset, Integer pageSize);
 
     @Select("<script> " +
             "SELECT p.problem_id, p.problem_title, p.problem_type, p.difficulty, p.status, p.last_modified, " +
-            "array_agg(c.category_name) AS tags " +
+            "array_agg(c.category_name) AS tags, p.mastery " +
             "FROM problem AS p " +
             "LEFT JOIN problem_category AS pc " +
             "ON p.problem_id = pc.problem_id " +
@@ -87,7 +103,16 @@ public interface UserMapper {
             "</if> " +
             "<if test='keyword != null'>AND (to_tsvector('zhcnsearch', p.problem_title || ' ' || p.problem_content) @@ to_tsquery('zhcnsearch', #{keyword}) " +
             "OR to_tsvector('english', p.problem_title || ' ' || p.problem_content) @@ to_tsquery('english', #{keyword}))</if> " +
-            "GROUP BY p.problem_id" +
+            "GROUP BY p.problem_id " +
+            "<if test='problemTitleSort == 1'>ORDER BY p.problem_title ASC</if> " +
+            "<if test='problemTitleSort == 2'>ORDER BY p.problem_title DESC</if> " +
+            "<if test='difficultySort == 1'>ORDER BY p.difficulty ASC</if> " +
+            "<if test='difficultySort == 2'>ORDER BY p.difficulty DESC</if> " +
+            "<if test='masterySort == 1'>ORDER BY p.mastery ASC</if> " +
+            "<if test='masterySort == 2'>ORDER BY p.mastery DESC</if> " +
+            "<if test='lastModifiedSort == 1'>ORDER BY p.last_modified ASC</if> " +
+            "<if test='lastModifiedSort == 2'>ORDER BY p.last_modified DESC</if> " +
+            "LIMIT #{pageSize} OFFSET #{offset} " +
             "</script>")
     @Results({
             @Result(property = "problemID", column = "problem_id"),
@@ -96,16 +121,17 @@ public interface UserMapper {
             @Result(property = "difficulty", column = "difficulty"),
             @Result(property = "status", column = "status"),
             @Result(property = "lastModified", column = "last_modified"),
-            @Result(property = "tags", column = "tags", typeHandler = com.aliersel.codevaultbackend.mapper.type_handler.ArrayTypeHandler.class)
+            @Result(property = "tags", column = "tags", typeHandler = com.aliersel.codevaultbackend.mapper.type_handler.ArrayTypeHandler.class),
+            @Result(property = "mastery", column = "mastery")
     })
-    Page<ProblemWithTags> findFilteredProblemsByUserID(Integer userID, Integer type, Integer difficulty, Boolean status, List<Integer> tagIDs, String keyword);
+    List<ProblemWithTags> findFilteredProblemsByUserID(Integer userID, Integer type, Integer difficulty, Boolean status, List<Integer> tagIDs, String keyword, Integer problemTitleSort, Integer difficultySort, Integer masterySort, Integer lastModifiedSort, Integer offset, Integer pageSize);
 
-    @Select("SELECT DISTINCT c.category_id AS id, c.category_name AS name, COALESCE(pc.count, 0) AS count " +
+    @Select("SELECT c.category_id AS id, c.category_name AS name, COALESCE(pc.count, 0) AS count " +
             "FROM category AS c " +
             "LEFT JOIN ( " +
-            "SELECT category_id, COUNT(problem_id) " +
-            "OVER (PARTITION BY category_id) " +
+            "SELECT category_id, COUNT(problem_id) AS count " +
             "FROM problem_category " +
+            "GROUP BY category_id " +
             ") AS pc " +
             "ON c.category_id = pc.category_id " +
             "WHERE c.user_id = #{userID}")

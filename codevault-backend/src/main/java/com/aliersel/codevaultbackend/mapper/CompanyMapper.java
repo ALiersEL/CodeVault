@@ -1,7 +1,6 @@
 package com.aliersel.codevaultbackend.mapper;
 
-import com.aliersel.codevaultbackend.controller.entity.CompanyWithCounts;
-import com.aliersel.codevaultbackend.entity.Company;
+import com.aliersel.codevaultbackend.controller.api.CompanyWithCounts;
 import com.aliersel.codevaultbackend.entity.Department;
 import com.aliersel.codevaultbackend.entity.Post;
 import org.apache.ibatis.annotations.Mapper;
@@ -18,9 +17,7 @@ public interface CompanyMapper {
             "LEFT JOIN problem_post AS pp ON p.post_id = pp.post_id " +
             "LEFT JOIN problem_department AS pd ON d.department_id = pd.department_id " +
             "LEFT JOIN problem_company AS pc ON c.company_id = pc.company_id " +
-            "WHERE pc.company_id = #{companyID} " +
-            "OR pd.department_id IN (SELECT department_id FROM department WHERE company_id = #{companyID}) " +
-            "OR pp.post_id IN (SELECT post_id FROM post WHERE department_id IN (SELECT department_id FROM department WHERE company_id = #{companyID})) " +
+            "WHERE c.user_id = #{userID} " +
             "GROUP BY c.company_id")
     List<CompanyWithCounts> findCompaniesByUserID(Integer userID);
 

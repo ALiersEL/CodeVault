@@ -97,7 +97,6 @@ const handleSubmit = () => {
     } else {
       console.log("提交失败");
     }
-    router.go(0);
   });
 
 };

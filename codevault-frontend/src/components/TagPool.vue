@@ -3,6 +3,7 @@ import { ref, h, onMounted } from "vue";
 import { NCard, NDynamicTags, NTag, NMessageProvider, NInput, NSpace } from "naive-ui";
 import ConfirmModal from "./ConfirmModal.vue";
 import { getMapping, postMapping, putMapping, deleteMapping } from "../api/request.ts";
+import emitter from "../utils/bus";
 
 // 标签名，标签id，使用次数
 type Tag = {
@@ -26,7 +27,9 @@ const renderTag = (tag: string) => {
       // 根据内容自动调整宽度
       autosize: { minRows: 1, maxRows: 1 },
       onUpdateValue: (value: string) => {
+        emitter.emit("refetchData");
         const index = tags.value.indexOf(tag);
+        // 更新标签
         tags.value[index] = value;
         // 同时更新fullTags中的标签
         fullTags.value[index].name = value;
@@ -36,7 +39,6 @@ const renderTag = (tag: string) => {
         putMapping(`users/tags/${tagID}`, { name: value }).then((res) => {
           console.log(res);
         });
-        router.go(0);
       },
       onChange: () => {
         editIndex.value = -1;
@@ -164,6 +166,7 @@ const renderCompany = (company: string) => {
       // 根据内容自动调整宽度
       autosize: { minRows: 1, maxRows: 1 },
       onUpdateValue: (value: string) => {
+        emitter.emit("refetchData");
         const index = companies.value.indexOf(company);
         companies.value[index] = value;
         // 同时更新fullCompanies中的公司
@@ -285,7 +288,7 @@ const updateCompanies = (value: string[]) => {
               <n-message-provider>
                   <ConfirmModal
                       v-model:showConfirmModal="showConfirmModal2"
-                      :promptMessage="'确定要删除标签 ' + companies[deleteIndexCompany] + ' 吗？'"
+                      :promptMessage="'确定要删除公司 ' + companies[deleteIndexCompany] + ' 吗？'"
                       @confirmed="deleteCompany"
                       @canceled="cancelDeleteCompany"
                   />

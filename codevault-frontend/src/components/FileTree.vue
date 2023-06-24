@@ -87,7 +87,7 @@ const getFolders = async (folderID: number): Promise<number> => {
         const queue: any[] = [...data.value]; // 创建data.value的副本以用作初始队列
         while (queue.length > 0) {
         const currentItem = queue.shift(); // 从队列中出列第一个item
-
+        
         if (currentItem.key === folderID) {
             // 如果当前文件夹的key和folderID相同，将其children增加为res.data.data
             // 如果res.data.data为空数组，删除该folderID的children属性
@@ -132,7 +132,7 @@ onMounted(() => {
     // 初始化文件树, 只有根文件夹
     data.value = [
         {
-            key: 1,
+            key: -1,
             label: "~",
             prefix: () => h(NIcon, null, {
                 default: () => h(FolderOpenOutline),
@@ -140,8 +140,19 @@ onMounted(() => {
             children: [],
         },
     ];
-    // 获取根文件夹下的文件夹
-    getFolders(1);
+
+    getMapping("/folders/root", {}) // 获取根文件夹
+    .then(res => {
+        if (res.data.code === 200) {
+            console.log(res.data.data);
+            data.value[0].key = res.data.data
+            getFolders(res.data.data);
+        }
+        else {
+            console.log(res.data.msg);
+        }
+    });
+    
 });
 </script>
 

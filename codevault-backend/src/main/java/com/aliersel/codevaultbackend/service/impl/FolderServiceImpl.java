@@ -1,6 +1,6 @@
 package com.aliersel.codevaultbackend.service.impl;
 
-import com.aliersel.codevaultbackend.controller.entity.FileWithTypes;
+import com.aliersel.codevaultbackend.controller.api.FileWithTypes;
 import com.aliersel.codevaultbackend.entity.Folder;
 import com.aliersel.codevaultbackend.mapper.FolderMapper;
 import com.aliersel.codevaultbackend.service.intf.FolderService;
@@ -39,9 +39,9 @@ public class FolderServiceImpl implements FolderService {
     }
 
     @Override
-    public Result<List<Folder>> getFoldersByFolderID(Integer userID, Integer folderID) {
+    public Result<List<Folder>> getFoldersByFolderID(Integer folderID) {
         try {
-            List<Folder> folders = folderMapper.findFoldersByFolderID(userID, folderID);
+            List<Folder> folders = folderMapper.findFoldersByFolderID(folderID);
             return ResultUtil.success(folders);
         } catch (Exception e) {
             e.printStackTrace();
@@ -86,9 +86,9 @@ public class FolderServiceImpl implements FolderService {
     }
 
     @Override
-    public Result renameFolder(Integer folderID, String newName) {
+    public Result renameFolder(Integer folderID, String newName, String newPath) {
         try {
-            folderMapper.updateFolderName(folderID, newName);
+            folderMapper.updateFolderName(folderID, newName, newPath);
             return ResultUtil.success();
         } catch (Exception e) {
             e.printStackTrace();
@@ -104,6 +104,16 @@ public class FolderServiceImpl implements FolderService {
         } catch (Exception e) {
             e.printStackTrace();
             return ResultUtil.error(500, "移动失败");
+        }
+    }
+
+    @Override
+    public Result<Integer> getRootFolderIDByUserID(Integer userID) {
+        try {
+            return ResultUtil.success(folderMapper.findFolderIDByFolderPath(userID, "~"));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResultUtil.error(500, "查找失败");
         }
     }
 }

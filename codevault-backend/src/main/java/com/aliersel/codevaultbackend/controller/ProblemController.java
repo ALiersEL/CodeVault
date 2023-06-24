@@ -2,7 +2,7 @@ package com.aliersel.codevaultbackend.controller;
 
 import com.alibaba.fastjson2.JSONObject;
 import com.aliersel.codevaultbackend.constant.enums.CodeLanguage;
-import com.aliersel.codevaultbackend.controller.entity.Source;
+import com.aliersel.codevaultbackend.controller.api.Source;
 import com.aliersel.codevaultbackend.entity.*;
 import com.aliersel.codevaultbackend.security.JwtTokenProvider;
 import com.aliersel.codevaultbackend.service.intf.FolderService;
@@ -157,6 +157,7 @@ public class ProblemController {
             Problem problem = problemService.findByProblemID(ProblemID).getData();
             List<Category> categories = problemService.findCategoriesByProblemID(ProblemID).getData();
             List<Source> sources = problemService.findSourcesByProblemID(ProblemID).getData();
+            System.out.println(sources);
             JSONObject jsonObject = new JSONObject();
             jsonObject.put("problem", problem);
             jsonObject.put("categories", categories);

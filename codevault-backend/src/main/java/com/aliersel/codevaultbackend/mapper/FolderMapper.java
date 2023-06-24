@@ -1,6 +1,6 @@
 package com.aliersel.codevaultbackend.mapper;
 
-import com.aliersel.codevaultbackend.controller.entity.FileWithTypes;
+import com.aliersel.codevaultbackend.controller.api.FileWithTypes;
 import com.aliersel.codevaultbackend.entity.Folder;
 import org.apache.ibatis.annotations.*;
 
@@ -34,8 +34,8 @@ public interface FolderMapper {
             "WHERE problem.user_id = #{userID} AND problem.folder_id = #{folderID}")
     List<FileWithTypes> findFilesByFolderID(Integer userID, Integer folderID);
 
-    @Select("SELECT * FROM folder WHERE user_id = #{userID} AND parent_folder_id = #{folderID}")
-    List<Folder> findFoldersByFolderID(Integer userID, Integer folderID);
+    @Select("SELECT * FROM folder WHERE parent_folder_id = #{folderID}")
+    List<Folder> findFoldersByFolderID(Integer folderID);
 
     @Insert("INSERT INTO folder (folder_name, folder_path, parent_folder_id, user_id) " +
             "VALUES (#{folderName}, #{folderPath}, (SELECT folder_id FROM folder WHERE user_id = #{userID} AND folder_path = #{parentPath}), #{userID})")
@@ -49,8 +49,30 @@ public interface FolderMapper {
     @Select("SELECT folder_id FROM folder WHERE user_id = #{userID} AND folder_path = #{folderPath}")
     Integer findFolderIDByFolderPath(Integer userID, String folderPath);
 
-    @Update("UPDATE folder SET folder_name = #{newName} WHERE folder_id = #{folderID}")
-    Boolean updateFolderName(Integer folderID, String newName);
+    // 更新该folderID的folderName, 并将该folderID所有子文件夹的folderPath更新
+    @Update("UPDATE folder " +
+            "SET folder_name = #{newName}, folder_path = #{newPath} " +
+            "WHERE folder_id = #{folderID}; -- 更新指定文件夹的名称\n" +
+
+            "WITH RECURSIVE subfolders AS ( " +
+            "    -- 获取指定文件夹及其所有子文件夹的信息\n" +
+            "    SELECT folder_id, folder_name, folder_path " +
+            "    FROM folder " +
+            "    WHERE folder_id = #{folderID} -- 指定要更改的文件夹的ID\n" +
+
+            "    UNION ALL\n" +
+
+            "    -- 递归获取子文件夹的信息\n" +
+            "    SELECT f.folder_id, f.folder_name, sf.folder_path || '/' || f.folder_name " +
+            "    FROM folder f " +
+            "    INNER JOIN subfolders AS sf ON f.parent_folder_id = sf.folder_id " +
+            ")" +
+
+            "UPDATE folder AS f " +
+            "SET folder_path = sf.folder_path " +
+            "FROM subfolders AS sf " +
+            "WHERE f.folder_id = sf.folder_id; ")
+    Boolean updateFolderName(Integer folderID, String newName, String newPath);
 
     @Update("UPDATE folder SET parent_folder_id = #{targetFolderID} WHERE folder_id = #{folderID}")
     Boolean updateFolderParent(Integer folderID, Integer targetFolderID);
