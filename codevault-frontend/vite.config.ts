@@ -2,7 +2,7 @@ import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import { Configuration } from 'webpack'
 import MonacoWebpackPlugin from 'monaco-editor-webpack-plugin';
-import prismjsPlugin from 'vite-plugin-prismjs';
+import { prismjsPlugin } from 'vite-plugin-prismjs';
 
 // https://vitejs.dev/config/
 export default defineConfig({
