@@ -11,7 +11,6 @@ CodeVault是一个基于关系数据库的网站，旨在管理面试问题。�
 jdbc:postgresql://${POSTGRESQL_HOST:localhost}:5432/code_vault  
 用户名和密码需要自行设置  
 需要执行DDL.sql进行数据库表的创建  
-需要执行DML.sql进行数据的导入
 
 ## 项目结构
 ```
