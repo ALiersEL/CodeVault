@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { defineEmits, computed } from "vue";
+import { computed } from "vue";
 import { NModal, useMessage } from "naive-ui";
 
 const message = useMessage();

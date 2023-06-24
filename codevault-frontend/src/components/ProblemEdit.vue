@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, computed, onMounted, nextTick, h } from "vue";
+import { ref, watch, computed, onMounted, nextTick, h, VNodeRef } from "vue";
 import {
   NForm,
   NFormItem,
@@ -16,7 +16,6 @@ import {
   AutoCompleteInst,
   NSelect,
   NTag,
-  FormInst,
 } from "naive-ui";
 import { Add } from "@vicons/ionicons5";
 // 导入富文本编辑器quill
@@ -25,7 +24,7 @@ import "@vueup/vue-quill/dist/vue-quill.snow.css";
 import { putMapping, getMapping } from "../api/request";
 import router from "../router";
 
-const formRef = ref<FormInst | null>(null);
+const formRef = ref<VNodeRef | null>(null);
 
 type source = {
   company: {
@@ -107,8 +106,9 @@ type option = {
 // 所有tagOptions中元素的type都为”success“
 const tagOptionsRef = ref<option[]>([]);
 const companyOptionsRef = ref<option[]>([]);
-const departmentOptionsRef = ref<option[]>([]);
-const postOptionsRef = ref<option[]>([]);
+// 二维数组，第一维为来源的序号，第二维为来源的选项
+const departmentOptionsRef = ref<option[][]>([]);
+const postOptionsRef = ref<option[][]>([]);
 
 // onMounted, 从后端获取当前用户的tagOptions, companyOptions
 onMounted(() => {
@@ -120,6 +120,18 @@ onMounted(() => {
       };
     });
   });
+  getMapping("/users/companies", {}).then((res) => {
+    console.log(res.data.data);
+    companyOptionsRef.value = res.data.data.map((item: any) => {
+      return {
+        label: item.name,
+        value: item.id
+      };
+    });
+  });
+  newCompanies.value = problem.value.sources.map((source) => source.company.companyName) as string[];
+  newDepartments.value = problem.value.sources.map((source) => source.department.departmentName) as string[];
+  newPosts.value = problem.value.sources.map((source) => source.post.postName) as string[];
 });
 
 const autoCompleteInstRef = ref<AutoCompleteInst | null>(null);
@@ -165,10 +177,11 @@ const selectTag = (tag: string) => {
   });
 
   if (existingTagIndex === -1) {
-    const nTag = {
+    // 如果tag为-1，label为newTag.value, 否则从tagOptions中找到label
+    const nTag: option = tag === "-1" ? {
       label: newTag.value,
       value: tag,
-    };
+    } : tagOptionsRef.value.find((item) => item.value === tag) as option;
     problem.value.tags.push(nTag);
   }
   console.log(problem.value.tags);
@@ -191,8 +204,25 @@ const renderTag = (tag: string, index: number) => {
   );
 };
 
+
+const newCompanies = ref<string[]>([]);
+const newDepartments = ref<string[]>([]);
+const newPosts = ref<string[]>([]);
+
+const createOption = (label: string) => {
+  return {
+    label: label,
+    value: "-1" + label,
+  };
+};
+
 const removeSource = (index: number) => {
   problem.value.sources.splice(index, 1);
+  newCompanies.value.splice(index, 1);
+  newDepartments.value.splice(index, 1);
+  newPosts.value.splice(index, 1);
+  departmentOptionsRef.value.splice(index, 1);
+  postOptionsRef.value.splice(index, 1);
 }
 
 const addSource = () => {
@@ -214,27 +244,61 @@ const addSource = () => {
 }
 
 const changeCompany = (index: number, value: string) => {
-  console.log(value);
-  console.log(companyOptionsRef.value);
-  problem.value.sources[index].company.companyName = value;
-  // 找得到companyID就赋值，找不到就赋值为-1
-  const matchingOption = companyOptionsRef.value.find((option) => option.label === value);
-  problem.value.sources[index].company.companyID = matchingOption ? matchingOption.value : "-1";
-  console.log(problem.value.sources);
+  // 如果value的前两个字符不为-1，就根据value找到对应的companyName和companyID，否则companyName为newCompany, companyID为-1
+  if (value.toString().slice(0, 2) !== "-1") {
+    const matchingOption = companyOptionsRef.value.find((option) => option.value === value);
+    problem.value.sources[index].company.companyName = matchingOption!.label;
+    problem.value.sources[index].company.companyID = value;
+    // 从后端获取departmentOptions
+    getMapping("/users/departments", {
+      companyID: value,
+    }).then((res) => {
+      departmentOptionsRef.value = res.data.data.map((item: any) => {
+        return {
+          label: item.departmentName,
+          value: item.departmentID
+        };
+      });
+    });
+  } else {
+    problem.value.sources[index].company.companyName = value.toString().slice(2);
+    problem.value.sources[index].company.companyID = "-1";
+  }
 }
 
 const changeDepartment = (index: number, value: string) => {
-  problem.value.sources[index].department.departmentName = value;
-  // 找得到departmentID就赋值，找不到就赋值为-1
-  const matchingOption = departmentOptionsRef.value.find((option) => option.label === value);
-  problem.value.sources[index].department.departmentID = matchingOption ? matchingOption.value : "-1";
+ // 如果value不为-1，就根据value找到对应的departmentName和departmentID，否则departmentName为newDepartment, departmentID为-1
+ if (value.toString().slice(0, 2) !== "-1") {
+    const matchingOption = departmentOptionsRef.value[index].find((option) => option.value === value);
+    problem.value.sources[index].department.departmentName = matchingOption!.label;
+    problem.value.sources[index].department.departmentID = value;
+    // 从后端获取postOptions
+    getMapping("/users/posts", {
+      departmentID: value,
+    }).then((res) => {
+      postOptionsRef.value = res.data.data.map((item: any) => {
+        return {
+          label: item.postName,
+          value: item.postID
+        };
+      });
+    });
+  } else {
+    problem.value.sources[index].department.departmentName = value.toString().slice(2);
+    problem.value.sources[index].department.departmentID = "-1";
+  }
 }
 
 const changePost = (index: number, value: string) => {
-  problem.value.sources[index].post.postName = value;
-  // 找得到postID就赋值，找不到就赋值为-1
-  const matchingOption = postOptionsRef.value.find((option) => option.label === value);
-  problem.value.sources[index].post.postID = matchingOption ? matchingOption.value : "-1";
+  // 如果value不为-1，就根据value找到对应的postName和postID，否则postName为newPost, postID为-1
+  if (value.toString().slice(0, 2) !== "-1") {
+    const matchingOption = postOptionsRef.value[index].find((option) => option.value === value);
+    problem.value.sources[index].post.postName = matchingOption!.label;
+    problem.value.sources[index].post.postID = value;
+  } else {
+    problem.value.sources[index].post.postName = value.toString().slice(2);
+    problem.value.sources[index].post.postID = "-1";
+  }
 }
 
 const handleSubmit = (e: MouseEvent) => {
@@ -399,43 +463,45 @@ const handleCancel = () => {
         <n-form-item  
           v-for="(item, index) in problem.sources" 
           :key="index"
-          :label="`题目来源${index + 1}`" >
+          :label="`题目来源${index + 1}`" 
+          :path="`sources.${index}`"
+        >
           <n-form-item>
             <span style="width: 42px; margin-left: 15px; margin-right: 10px;">公司</span>
             <n-select
-              v-model:value="item.company.companyName"
+              v-model:value="newCompanies[index]"
               filterable
               tag
-              placeholder="Select"
+              placeholder="选择公司"
               :options="companyOptionsRef"
               @update:value="changeCompany(index, $event)"
-              clearable
+              @create="createOption"
             />
           </n-form-item>
           <n-form-item>
             <span class="source-label">部门</span>
             <n-select
-              v-model:value="item.department.departmentName"
+              v-model:value="newDepartments[index]"
               filterable
               tag
-              placeholder="Select"
-              :options="departmentOptionsRef"
-              :disabled="!item.company.companyName"
+              placeholder="选择部门"
+              :options="departmentOptionsRef[index]"
+              :disabled="!newCompanies[index]"
               @update:value="changeDepartment(index, $event)"
-              clearable
+              @create="createOption"
             />
           </n-form-item>
           <n-form-item>
             <span class="source-label">岗位</span>
             <n-select
-              v-model:value="item.post.postName"
+              v-model:value="newPosts[index]"
               filterable
               tag
-              placeholder="Select"
-              :options="postOptionsRef"
-              :disabled="!item.department.departmentName"
+              placeholder="选择岗位"
+              :options="postOptionsRef[index]"
+              :disabled="!newDepartments[index]"
               @update:value="changePost(index, $event)"
-              clearable
+              @create="createOption"
             />
           </n-form-item>
           <n-button style="margin-left: 12px;top: -10px;" @click="removeSource(index)">

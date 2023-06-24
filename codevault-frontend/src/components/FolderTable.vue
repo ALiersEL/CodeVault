@@ -7,7 +7,7 @@ import {h, ref, nextTick, onUpdated, inject } from "vue";
 import router from "../router";
 import FileTreeModal from "./FileTreeModal.vue";
 import ConfirmModal from "./ConfirmModal.vue";
-import { deleteMapping } from "../api/request";
+import { deleteMapping, putMapping } from "../api/request";
 
 const promptMessage = ref<string>("");
 type RowData = {
@@ -25,8 +25,79 @@ const createColumns = (): DataTableColumns<RowData> => [
   {
     title: "名称",
     key: "name",
-    // 如果row,name是文件夹, 前面加一个文件夹图标，否则加一个文件图标
     render(row) {
+        // 如果row.id和editID.value相等, 显示一个input框, 否则显示一个span
+        if(row.id === editID.value) {
+          // 如果row.type是文件夹, 显示一个文件夹图标, 否则显示一个文件图标
+          if(row.type === "文件夹") {
+            return h("div", [
+              h(NIcon, { component: Folder20Filled }),
+              h("input", { 
+                value: row["name"],
+                style: { width: (row["name"].length + 1) + "ch" },
+                // 调用focus()方法, 使input框获得焦点
+                onVnodeMounted: (vnode) => {
+                  (vnode.el as HTMLInputElement).focus();
+                },
+                onInput: (e: InputEvent) => {
+                  // 将输入的值赋给row.name
+                  row["name"] = (e.target as HTMLInputElement).value;
+                },
+                onKeydown: (e: KeyboardEvent) => {
+                  // 如果按下的是回车键, 将name.value作为新的文件夹名, 发送请求
+                  if(e.key === "Enter") {
+                    // 发送请求
+                    editID.value = 0;
+                    // folders/${row.id}/name
+                    putMapping(`/folders/${row.id}/name`, {
+                      newName: row["name"],
+                      newPath: router.currentRoute.value.query.path + "/" + row["name"]
+                    })
+                    .then((res) => {
+                      console.log(res);
+                    })
+                  }
+                },
+                // 鼠标移除input框时, 将editID.value置为0
+                onBlur: () => {
+                  editID.value = 0;
+                },
+              }),
+            ]);
+          }
+          return h("div", [
+            h(NIcon, { component: FileAltRegular }),
+            h("input", {
+              value: row["name"],
+              style: { width: (row["name"].length + 1) + "ch" },
+              onVnodeMounted: (vnode) => {
+                  (vnode.el as HTMLInputElement).focus();
+              },
+              onInput: (e: InputEvent) => {
+                // 将输入的值赋给row.name
+                row["name"] = (e.target as HTMLInputElement).value;
+              },
+              onKeydown: (e: KeyboardEvent) => {
+                // 如果按下的是回车键, 将name.value作为新的文件名, 发送请求
+                if(e.key === "Enter") {
+                  // 发送请求
+                  editID.value = 0;
+                  // problems/${row.id}/name
+                  putMapping(`/problems/${row.id}/name`, {
+                    newName: row["name"]
+                  })
+                  .then((res) => {
+                    console.log(res);
+                  })
+                }
+              },
+              // 鼠标移除input框时, 将editID.value置为0
+              onBlur: () => {
+                editID.value = 0;
+              },
+            }),
+          ]);
+        } 
         if ((row.type === "文件夹")) {
             return h(
               "div", [
@@ -102,7 +173,7 @@ const options: DropdownOption[] = [
 ]
 
 const pagination = {
-    pageSize: 12,
+    pageSize: 20,
 }
 
 const showDropdown = ref(false);
@@ -113,6 +184,7 @@ const y = ref(0);
 const id = ref(0);
 const type = ref("");
 const name = ref("");
+const editID = ref(0);
 
 const onClickoutside = () => {
   showDropdown.value = false;
@@ -120,7 +192,8 @@ const onClickoutside = () => {
 
 const handleSelect = ( key: string) => {
   if(key === 'rename') {
-    console.log('rename');
+    editID.value = id.value;
+    console.log('rename' + ' ' + editID.value);
   } else if(key === 'move') {
     showFileTreeModal.value = true;
     console.log('move');
@@ -176,16 +249,19 @@ const getFolderContent = inject("getFolderContent") as () => void;
 
 const deleteFile = () => {
   // 如果checkedRowKeys.value为空, 删除id为id.value, type为type.value的文件
+  // data.value中也删除
   console.log(checkedRowKeysRef.value);
   if(checkedRowKeysRef.value.length === 0) {
     if(type.value === "文件夹") {
       deleteMapping(`/folders/${id.value}`, {}).then((res) => {
         console.log(res);
       });
+      data.value = data.value.filter((item) => item.id !== id.value);
     } else {
       deleteMapping(`/problems/${id.value}`, {}).then((res) => {
         console.log(res);
       });
+      data.value = data.value.filter((item) => item.id !== id.value);
     }
     getFolderContent();
     showConfirmModal.value = false;
@@ -201,14 +277,15 @@ const deleteFile = () => {
       deleteMapping(`/problems/${id}`, {}).then((res) => {
         console.log(res);
       });
+      data.value = data.value.filter((item) => item.id !== id);
     } else {
       const id = parseInt(key.slice(3));
       deleteMapping(`/folders/${id}`, {}).then((res) => {
         console.log(res);
       });
+      data.value = data.value.filter((item) => item.id !== id);
     }
   });
-  // 重新渲染文件夹内容
   getFolderContent();
   showConfirmModal.value = false;
 };

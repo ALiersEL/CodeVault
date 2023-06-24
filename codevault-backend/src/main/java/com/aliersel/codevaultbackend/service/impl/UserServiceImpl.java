@@ -1,8 +1,8 @@
 package com.aliersel.codevaultbackend.service.impl;
 
-import com.aliersel.codevaultbackend.controller.entity.CategoryWithCounts;
-import com.aliersel.codevaultbackend.controller.entity.CompanyWithCounts;
-import com.aliersel.codevaultbackend.controller.entity.ProblemWithTags;
+import com.aliersel.codevaultbackend.controller.api.CategoryWithCounts;
+import com.aliersel.codevaultbackend.controller.api.CompanyWithCounts;
+import com.aliersel.codevaultbackend.controller.api.ProblemWithTags;
 import com.aliersel.codevaultbackend.entity.*;
 import com.aliersel.codevaultbackend.mapper.CompanyMapper;
 import com.aliersel.codevaultbackend.mapper.UserMapper;
@@ -10,7 +10,6 @@ import com.aliersel.codevaultbackend.security.JwtTokenProvider;
 import com.aliersel.codevaultbackend.service.intf.UserService;
 import com.aliersel.codevaultbackend.utils.Result;
 import com.aliersel.codevaultbackend.utils.ResultUtil;
-import com.github.pagehelper.Page;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -166,10 +165,18 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Result<Page<ProblemWithTags>> getProblemsByUserID(Integer userID) {
+    public Result<Integer> getProblemCountByUserID(Integer userID) {
         try {
-            System.out.println(userMapper.findProblemsByUserID(userID));
-            return ResultUtil.success(userMapper.findProblemsByUserID(userID));
+            return ResultUtil.success(userMapper.countProblemsByUserID(userID));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResultUtil.error(400, "Get problem count failed");
+        }
+    }
+    @Override
+    public Result<List<ProblemWithTags>> getProblemsByUserID(Integer userID, Integer problemTitleSort, Integer difficultySort, Integer masterySort, Integer lastModifiedSort, Integer offset, Integer pageSize) {
+        try {
+            return ResultUtil.success(userMapper.findProblemsByUserID(userID, problemTitleSort, difficultySort, masterySort, lastModifiedSort, offset, pageSize));
         } catch (Exception e) {
             e.printStackTrace();
             return ResultUtil.error(400, "Get problems failed");
@@ -177,9 +184,9 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Result<Page<ProblemWithTags>> getFilteredProblemsByUserID(Integer userID, Integer type, Integer difficulty, Boolean status, List<Integer> tagIDs, String keyword) {
+    public Result<List<ProblemWithTags>> getFilteredProblemsByUserID(Integer userID, Integer type, Integer difficulty, Boolean status, List<Integer> tagIDs, String keyword, Integer problemTitleSort, Integer difficultySort, Integer masterySort, Integer lastModifiedSort, Integer offset, Integer pageSize) {
         try {
-            return ResultUtil.success(userMapper.findFilteredProblemsByUserID(userID, type, difficulty, status, tagIDs, keyword));
+            return ResultUtil.success(userMapper.findFilteredProblemsByUserID(userID, type, difficulty, status, tagIDs, keyword, problemTitleSort, difficultySort, masterySort, lastModifiedSort, offset, pageSize));
         } catch (Exception e) {
             e.printStackTrace();
             return ResultUtil.error(400, "Get problems failed");

@@ -4,7 +4,6 @@ import "@vueup/vue-quill/dist/vue-quill.snow.css";
 import { NButton } from "naive-ui";
 import { ref } from "vue";
 import { postMapping } from "../api/request";
-import router from "../router";
 
 const note = ref("");
 
@@ -21,7 +20,6 @@ const handleSubmit = () => {
       console.log("提交失败");
     }
   });
-  router.go(0);
 }
 </script>
 

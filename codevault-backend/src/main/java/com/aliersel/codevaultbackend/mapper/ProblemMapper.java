@@ -1,6 +1,6 @@
 package com.aliersel.codevaultbackend.mapper;
 
-import com.aliersel.codevaultbackend.controller.entity.Source;
+import com.aliersel.codevaultbackend.controller.api.Source;
 import com.aliersel.codevaultbackend.entity.*;
 import org.apache.ibatis.annotations.*;
 
@@ -75,12 +75,12 @@ public interface ProblemMapper {
             "WHERE problem_id = #{problemID}")
     List<Integer> findPostIDsByProblemID(Integer problemID);
 
-    @Select("SELECT company_name, company.company_id, NULL, CAST(NULL AS INTEGER), NULL, CAST(NULL AS INTEGER) " +
+    @Select("SELECT company_name, company.company_id, NULL AS department_name, CAST(NULL AS INTEGER) AS department_id, NULL AS post_name, CAST(NULL AS INTEGER) AS post_id " +
             "FROM problem_company " +
             "INNER JOIN company ON problem_company.company_id = company.company_id " +
             "WHERE problem_company.problem_id = #{problemID} " +
             "UNION " +
-            "SELECT company_name, company.company_id, department_name, department.department_id, NULL, CAST(NULL AS INTEGER) " +
+            "SELECT company_name, company.company_id, department_name, department.department_id, NULL AS post_name , CAST(NULL AS INTEGER) AS post_id " +
             "FROM problem_department " +
             "INNER JOIN department ON problem_department.department_id = department.department_id " +
             "INNER JOIN company ON department.company_id = company.company_id " +

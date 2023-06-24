@@ -1,7 +1,7 @@
 package com.aliersel.codevaultbackend.service.intf;
 
 import com.alibaba.fastjson2.JSONObject;
-import com.aliersel.codevaultbackend.controller.entity.Source;
+import com.aliersel.codevaultbackend.controller.api.Source;
 import com.aliersel.codevaultbackend.entity.Category;
 import com.aliersel.codevaultbackend.entity.Code;
 import com.aliersel.codevaultbackend.entity.Note;

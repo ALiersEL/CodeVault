@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, computed, onMounted, onUpdated, nextTick, h, reactive, VNodeRef } from "vue";
+import { ref, watch, computed, onMounted, nextTick, h, reactive, VNodeRef } from "vue";
 import {
   NForm,
   NFormItem,
@@ -123,9 +123,9 @@ type option = {
 // 所有tagOptions中元素的type都为”success“
 const tagOptionsRef = ref<option[]>([]);
 const companyOptionsRef = ref<option[]>([]);
-const departmentOptionsRef = ref<option[]>([]);
-const postOptionsRef = ref<option[]>([]);
-
+// 二维数组，第一维为来源的序号，第二维为来源的选项
+const departmentOptionsRef = ref<option[][]>([]);
+const postOptionsRef = ref<option[][]>([]);
 // onMounted, 从后端获取当前用户的tagOptions, companyOptions
 onMounted(() => {
   getMapping("/users/tags", {}).then((res) => {
@@ -136,11 +136,17 @@ onMounted(() => {
       };
     });
   });
-  console.log(departmentOptionsRef.value);
+  getMapping("/users/companies", {}).then((res) => {
+    console.log(res.data.data);
+    companyOptionsRef.value = res.data.data.map((item: any) => {
+      return {
+        label: item.name,
+        value: item.id
+      };
+    });
+  });
+  console.log(companyOptionsRef.value);
 });
-
-onUpdated(() => {});
-
 
 const autoCompleteInstRef = ref<AutoCompleteInst | null>(null);
 
@@ -184,11 +190,13 @@ const selectTag = (tag: string) => {
     }
   });
 
+  // 如果tag不在problem.tags中，就添加
   if (existingTagIndex === -1) {
-    const nTag = {
+    // 如果tag为-1，label为newTag.value, 否则从tagOptions中找到label
+    const nTag: option = tag === "-1" ? {
       label: newTag.value,
       value: tag,
-    };
+    } : tagOptionsRef.value.find((item) => item.value === tag) as option;
     problem.tags.push(nTag);
   }
   console.log(problem.tags);
@@ -211,8 +219,25 @@ const renderTag = (tag: string, index: number) => {
   );
 };
 
+
+const newCompanies = ref<string[]>([]);
+const newDepartments = ref<string[]>([]);
+const newPosts = ref<string[]>([]);
+
+const createOption = (label: string) => {
+  return {
+    label: label,
+    value: "-1" + label,
+  };
+};
+
 const removeSource = (index: number) => {
   problem.sources.splice(index, 1);
+  newCompanies.value.splice(index, 1);
+  newDepartments.value.splice(index, 1);
+  newPosts.value.splice(index, 1);
+  departmentOptionsRef.value.splice(index, 1);
+  postOptionsRef.value.splice(index, 1);
 }
 
 const addSource = () => {
@@ -234,29 +259,66 @@ const addSource = () => {
 }
 
 const changeCompany = (index: number, value: string) => {
-  console.log(value);
   console.log(companyOptionsRef.value);
-  problem.sources[index].company.companyName = value;
-  // 找得到ycompanID就赋值，找不到就赋值为-1
-  const matchingOption = companyOptionsRef.value.find((option) => option.label === value);
-  problem.sources[index].company.companyID = matchingOption ? matchingOption.value : "-1";
+  // 如果value的前两个字符不为-1，就根据value找到对应的companyName和companyID，否则companyName为newCompany, companyID为-1
+  if (value.toString().slice(0, 2) !== "-1") {
+    const matchingOption = companyOptionsRef.value.find((option) => option.value === value);
+    problem.sources[index].company.companyName = matchingOption!.label;
+    problem.sources[index].company.companyID = value;
+    // 从后端获取departmentOptions
+    getMapping("/users/departments", {
+      companyID: value,
+    }).then((res) => {
+      departmentOptionsRef.value[index] = res.data.data.map((item: any) => {
+        return {
+          label: item.departmentName,
+          value: item.departmentID
+        };
+      });
+    });
+  } else {
+    problem.sources[index].company.companyName = value.toString().slice(2);
+    problem.sources[index].company.companyID = "-1";
+  }
   console.log(problem.sources);
 }
 
 const changeDepartment = (index: number, value: string) => {
-  problem.sources[index].department.departmentName = value;
-  // 找得到companyID就赋值，找不到就赋值为-1
-  const matchingOption = departmentOptionsRef.value.find((option) => option.label === value);
-  problem.sources[index].department.departmentID = matchingOption ? matchingOption.value : "-1";
+  // 如果value不为-1，就根据value找到对应的departmentName和departmentID，否则departmentName为newDepartment, departmentID为-1
+  if (value.toString().slice(0, 2) !== "-1") {
+    const matchingOption = departmentOptionsRef.value[index].find((option) => option.value === value);
+    problem.sources[index].department.departmentName = matchingOption!.label;
+    problem.sources[index].department.departmentID = value;
+    // 从后端获取postOptions
+    getMapping("/users/posts", {
+      departmentID: value,
+    }).then((res) => {
+      postOptionsRef.value[index] = res.data.data.map((item: any) => {
+        return {
+          label: item.postName,
+          value: item.postID
+        };
+      });
+    });
+  } else {
+    problem.sources[index].department.departmentName = value.toString().slice(2);
+    problem.sources[index].department.departmentID = "-1";
+  }
 }
 
 const changePost = (index: number, value: string) => {
-  problem.sources[index].post.postName = value;
-  // 找得到companyID就赋值，找不到就赋值为-1
-  const matchingOption = postOptionsRef.value.find((option) => option.label === value);
-  problem.sources[index].post.postID = matchingOption ? matchingOption.value : "-1";
+  // 如果value不为-1，就根据value找到对应的postName和postID，否则postName为newPost, postID为-1
+  if (value.toString().slice(0, 2) !== "-1") {
+    const matchingOption = postOptionsRef.value[index].find((option) => option.value === value);
+    problem.sources[index].post.postName = matchingOption!.label;
+    problem.sources[index].post.postID = value;
+  } else {
+    problem.sources[index].post.postName = value.toString().slice(2);
+    problem.sources[index].post.postID = "-1";
+  }
 }
 
+const emit = defineEmits(["handleClose"]);
 const handleSubmit = (e: MouseEvent) => {
   e.preventDefault();
   formRef.value?.validate((errors: string) => {
@@ -278,8 +340,6 @@ const handleSubmit = (e: MouseEvent) => {
     return;
   }
   
-  // const problem2 = problem;
-  // problem2.problemContent = JSON.stringify(problem2.problemContent);
   // 将problem穿到后端
   postMapping("/problems", problem)
   .then((res) => {
@@ -315,6 +375,7 @@ const handleSubmit = (e: MouseEvent) => {
     } else {
       alert("添加失败");
     }
+    emit("handleClose");
   });
 };
 </script>
@@ -413,40 +474,45 @@ const handleSubmit = (e: MouseEvent) => {
       <n-form-item  
         v-for="(item, index) in problem.sources" 
         :key="index"
-        :label="`题目来源${index + 1}`" >
+        :label="`题目来源${index + 1}`" 
+        :path="`sources.${index}`"
+      >
         <n-form-item>
           <span style="width: 42px; margin-left: 2px">公司</span>
           <n-select
-            v-model:value="item.company.companyName"
+            v-model:value="newCompanies[index]"
             filterable
             tag
-            placeholder="Select"
+            placeholder="选择公司"
             :options="companyOptionsRef"
             @update:value="changeCompany(index, $event)"
+            @create="createOption"
           />
         </n-form-item>
         <n-form-item>
           <span class="source-label">部门</span>
           <n-select
-            v-model:value="item.department.departmentName"
+            v-model:value="newDepartments[index]"
             filterable
             tag
-            placeholder="Select"
-            :options="departmentOptionsRef"
-            :disabled="!item.company.companyName"
+            placeholder="选择部门"
+            :options="departmentOptionsRef[index]"
+            :disabled="!newCompanies[index]"
             @update:value="changeDepartment(index, $event)"
+            @create="createOption"
           />
         </n-form-item>
         <n-form-item>
           <span class="source-label">岗位</span>
           <n-select
-            v-model:value="item.post.postName"
+            v-model:value="newPosts[index]"
             filterable
             tag
-            placeholder="Select"
-            :options="postOptionsRef"
-            :disabled="!item.department.departmentName"
+            placeholder="选择岗位"
+            :options="postOptionsRef[index]"
+            :disabled="!newDepartments[index]"
             @update:value="changePost(index, $event)"
+            @create="createOption"
           />
         </n-form-item>
         <n-button style="margin-left: 12px;top: -10px;" @click="removeSource(index)">

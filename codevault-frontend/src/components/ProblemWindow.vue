@@ -2,8 +2,7 @@
 import ProblemDescription from "./ProblemDescription.vue";
 import ProblemEdit from "./ProblemEdit.vue";
 import { ref, onMounted } from "vue";
-import { Edit } from "@vicons/tabler";
-import { NSpace, NButton, NIcon } from "naive-ui";
+import { NGrid, NGridItem, NButton } from "naive-ui";
 import router from "../router";
 import { getMapping } from "../api/request";
 
@@ -123,31 +122,43 @@ onMounted(() => {
 </script>
 
 <template>
-    <div class="container">
-        <!-- 每行一个元素 -->
-        <div v-if="isRead">
-            <n-space>
-                <ProblemDescription :problem="problem"/>
-                <n-button 
-                    quaternary 
-                    type="primary"
-                    @click="toggleEdit"
-                    style="margin-left: 10px;">
-                    <n-icon :component="Edit"></n-icon>
-                </n-button>
-            </n-space>
-        </div>
-        <div v-else>
-            <ProblemEdit :problem="problem" @changeMode="toggleEdit"/>
-        </div>
+  <div class="container">
+    <!-- 每行一个元素 -->
+    <div v-if="isRead">
+      <n-grid :cols="25" >
+        <n-grid-item span="23">
+          <ProblemDescription :problem="problem"/>
+        </n-grid-item>
+        <n-grid-item>
+          <n-button 
+              quaternary 
+              type="primary"
+              @click="toggleEdit"
+              style="margin-left: 10px;">
+            <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 24 24" width="20" height="20">
+              <g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9 7H6a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2-2v-3">  
+                </path>
+                <path d="M9 15h3l8.5-8.5a1.5 1.5 0 0 0-3-3L9 12v3">
+                </path>
+                <path d="M16 5l3 3">
+                </path>
+              </g>
+            </svg>
+          </n-button>
+        </n-grid-item>
+      </n-grid>
     </div>
+    <div v-else>
+      <ProblemEdit :problem="problem" @changeMode="toggleEdit"/>
+    </div>
+  </div>
 </template>
 
 <style scoped>
 .container {
   width: 100%;
-  margin-left: 10px;
-  margin-right: 10px;
+  margin-left: 20px;
   margin-top: 10px;
   height: calc(100vh - 75px);
   overflow: auto;
