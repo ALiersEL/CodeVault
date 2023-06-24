@@ -103,7 +103,7 @@ jdbc:postgresql://${POSTGRESQL_HOST:localhost}:5432/code_vault
 ## 项目开源协议
 MIT License
 
-# 项目参考资料
+## 项目参考资料
 - [Spring Boot](https://spring.io/projects/spring-boot)
 - [MyBatis](https://mybatis.org/mybatis-3/)
 - [PostgreSQL](https://www.postgresql.org/)
