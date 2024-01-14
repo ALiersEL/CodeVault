@@ -1,5 +1,5 @@
 # CodeVault
-[中文版](README.zh.md)
+[中文](README.zh.md)
 
 CodeVault is a website based on a relational database designed to manage interview questions. It offers two types of questions: algorithmic and textual. Through this platform, users can easily organize, manage, and browse various interview questions. Whether you need challenging algorithmic problems or textual questions that demonstrate your thinking skills, CodeVault meets the needs of job seekers and interviewers alike. This powerful tool provides reliable support for interview preparation, enabling everyone to perform at their best during interviews.
 
